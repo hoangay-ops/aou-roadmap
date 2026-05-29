@@ -14,9 +14,11 @@
     ::-webkit-scrollbar{width:6px;height:6px;}
     ::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px;}
     @keyframes spin{to{transform:rotate(360deg)}}
-    /* [CHANGE] Hover affordance on label rows */
     .lbl-row:hover{background:#f7fafd !important;}
     .lbl-row:hover .lbl-chevron{opacity:.5 !important;}
+    /* [FIX] KPI card click affordance */
+    .kpi-card-active{cursor:pointer;transition:box-shadow .15s,border-color .15s;}
+    .kpi-card-active:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);border-color:#b0b0b0 !important;}
   </style>
 </head>
 <body style="height:100%;display:flex;flex-direction:column;">
@@ -108,7 +110,6 @@ function parseTSV(tsv) {
 const LIVE_SHEET_ID  = "1UAVBmkBC1l-Pnp5UMe_72FTjv_03Xwe9fcgu5nHPcQg";
 const LIVE_SHEET_GID = "0";
 
-// [CHANGE] Status config — maps sheet values to display label, color, and dot color
 const STATUS_CFG = {
   "On Track":  { label:"On Track",  dot:"#1E8449", bg:"#D5F5E3", tx:"#1E8449" },
   "At Risk":   { label:"At Risk",   dot:"#B7950B", bg:"#FEF9E7", tx:"#7D6008" },
@@ -117,7 +118,6 @@ const STATUS_CFG = {
 const STATUS_KEYS = ["On Track","At Risk","Off Track"];
 
 const MONTHS  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-// [CHANGE] ROW_H increased from 32→36 for breathing room
 const MC      = "#F5A800";
 const ROW_H   = 36;
 const LABEL_W = 264;
@@ -152,12 +152,16 @@ function resolveGoal(r){var s=String(r||"").trim();return GOALS[s]?s:(GOAL_NUM_M
 function extractParentId(p){if(!p)return "";var t=String(p).split(" ")[0].trim();return /^\d+(\.\d+)*$/.test(t)?t:"";}
 function goalOrder(g){return GOALS[g]?Number(GOALS[g].num):99;}
 
-// [CHANGE] Date formatter: "4/8/26" → "Apr 8, 2026"
 function fmtDate(s) {
   if (!s) return "";
   var d = new Date(s);
   if (isNaN(d)) return s;
   return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+}
+// [FIX] Full date+time formatter for footer
+function fmtDateTime(d) {
+  if (!d) return "";
+  return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) + " at " + d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
 }
 
 function genMonths(vs,ve){
@@ -204,7 +208,6 @@ function parseCSV(text){
   return rows.filter(function(r){return r.some(function(c){return c.trim()!=="";});}).map(function(r){var o={};hdrs.forEach(function(h,i){o[h]=(r[i]||"").trim();});return o;});
 }
 
-// [CHANGE] normalizeRows now maps `status` column for initiative rows
 function normalizeRows(rows){
   var inits=[],mils=[];
   for(var i=0;i<rows.length;i++){
@@ -217,7 +220,6 @@ function normalizeRows(rows){
       var goal=resolveGoal(nf(r.goal)),rawType=nf(r.type);
       if(rawType==="Program Staff"||rawType==="Participant Milestone")continue;
       if(!goal||!rawType||TYPE_KEYS.indexOf(rawType)===-1)continue;
-      // [CHANGE] Read status; normalize to known values or null
       var rawStatus = nf(r.status)||nf(r["Status"])||"";
       var status = STATUS_CFG[rawStatus] ? rawStatus : null;
       inits.push({
@@ -226,7 +228,7 @@ function normalizeRows(rows){
         goal,type:rawType,cat:"initiative",
         overviewUrl:nf(r.overviewUrl),
         quarter:nf(r.quarter)||null,
-        status,                         // [CHANGE] new field
+        status,
         notes:nf(r.notes)||null,
         description:nf(r.description,r.summary)||null,
       });
@@ -245,7 +247,7 @@ function normalizeRows(rows){
   return inits.concat(resolvedMs);
 }
 
-// ─── Data fetching (unchanged) ────────────────────────────────────────────────
+// ─── Data fetching ────────────────────────────────────────────────────────────
 function addCacheBuster(url){return url+(url.indexOf("?")===-1?"?":"&")+"_="+Date.now()+"-"+Math.random().toString(36).slice(2);}
 function sheetUrlCandidates(){
   var params=new URLSearchParams(window.location.search||"");
@@ -282,11 +284,17 @@ function MsIcon({icon,sz,col,style:s}){return icon==="star"?<StarIcon sz={sz} co
 function ExtLink(){return <svg width={10} height={10} viewBox="0 0 12 12" style={{display:"inline",verticalAlign:"-1px",opacity:.4}} fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 3L3 9M9 3H5M9 3v4" strokeLinecap="round" strokeLinejoin="round"/></svg>;}
 function GridLines({n,faint}){return <div style={{position:"absolute",inset:0,zIndex:1,pointerEvents:"none",display:"flex",overflow:"hidden"}}>{Array.from({length:n}).map((_,i)=><div key={i} style={{flex:1,borderRight:i<n-1?"1px solid "+(faint?"#f2f2f2":"#e8e8e8"):"none"}}/>)}</div>;}
 function Sep(){return <span style={{width:1,height:20,background:"#e8e8e8",flexShrink:0}}/>;}
-function SegBtn({onClick,active,children}){return <button onClick={onClick} style={{fontSize:11,padding:"4px 10px",border:"1px solid "+(active?"#2471A3":"#e0e0e0"),borderRadius:6,background:active?"#2471A3":"#fff",color:active?"#fff":"#666",cursor:"pointer",fontWeight:active?600:400}}>{children}</button>;}
-function Tog({onClick,on,children}){return <button onClick={onClick} style={{fontSize:11,padding:"4px 10px",border:"1px solid "+(on?"#2471A3":"#e0e0e0"),borderRadius:6,background:on?"#EBF5FB":"#fff",color:on?"#2471A3":"#888",cursor:"pointer",fontWeight:on?600:400}}>{children}</button>;}
+function SegBtn({onClick,active,children,disabled}){return <button onClick={onClick} disabled={disabled} style={{fontSize:11,padding:"4px 10px",border:"1px solid "+(active?"#2471A3":"#e0e0e0"),borderRadius:6,background:active?"#2471A3":"#fff",color:active?"#fff":"#666",cursor:disabled?"default":"pointer",fontWeight:active?600:400,opacity:disabled?.5:1}}>{children}</button>;}
+function Tog({onClick,on,children,disabled}){return <button onClick={onClick} disabled={disabled} style={{fontSize:11,padding:"4px 10px",border:"1px solid "+(on?"#2471A3":"#e0e0e0"),borderRadius:6,background:on?"#EBF5FB":"#fff",color:on?"#2471A3":"#888",cursor:disabled?"default":"pointer",fontWeight:on?600:400,opacity:disabled?.5:1}}>{children}</button>;}
 function CB({on,col="#2471A3"}){return <span style={{width:14,height:14,borderRadius:3,border:"1px solid "+(on?col:"#ccc"),background:on?col:"#fff",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{on&&<span style={{color:"#fff",fontSize:9}}>✓</span>}</span>;}
 
-// [CHANGE] Status badge component — dot + label, used in label panel and detail panel
+// [FIX] StatusDot — tiny inline dot for label rows
+function StatusDot({status}){
+  var cfg = STATUS_CFG[status];
+  if (!cfg) return null;
+  return <span title={cfg.label} style={{width:7,height:7,borderRadius:"50%",background:cfg.dot,flexShrink:0,display:"inline-block"}}/>;
+}
+
 function StatusBadge({status, compact=false}){
   var cfg = STATUS_CFG[status];
   if (!cfg) return null;
@@ -298,13 +306,13 @@ function StatusBadge({status, compact=false}){
   );
 }
 
-function MultiSelect({label,options,selected,onChange,getKey,getLabel,getColor}){
+function MultiSelect({label,options,selected,onChange,getKey,getLabel,getColor,disabled}){
   var [open,setOpen]=useState(false),ref=useRef(null);
   useEffect(function(){function h(e){if(ref.current&&!ref.current.contains(e.target))setOpen(false);}document.addEventListener("mousedown",h);return function(){document.removeEventListener("mousedown",h);};},[]);
   var all=selected.length===0;
   function toggle(k){onChange(selected.includes(k)?selected.filter(x=>x!==k):selected.concat([k]));}
   return(
-    <div ref={ref} style={{position:"relative",display:"inline-block"}}>
+    <div ref={ref} style={{position:"relative",display:"inline-block",opacity:disabled?.5:1,pointerEvents:disabled?"none":"auto"}}>
       <button onClick={()=>setOpen(o=>!o)} style={{fontSize:10.5,padding:"4px 10px",border:"1px solid "+(open||!all?"#2471A3":"#e0e0e0"),borderRadius:20,background:open||!all?"#D6EAF8":"#fafafa",color:open||!all?"#2471A3":"#666",cursor:"pointer",display:"flex",alignItems:"center",gap:5,whiteSpace:"nowrap"}}>
         {all?label:label+" ("+selected.length+")"}<span style={{fontSize:8,opacity:.6}}>{open?"▲":"▼"}</span>
       </button>
@@ -324,6 +332,9 @@ function MultiSelect({label,options,selected,onChange,getKey,getLabel,getColor})
 }
 
 // ─── App ─────────────────────────────────────────────────────────────────────
+// [FEATURE FLAG] Set to true when you start tracking status in the sheet
+const ENABLE_STATUS_TRACKING = false;
+
 function App(){
   var [items,setItems]           = useState([]);
   var [loadSt,setLoadSt]         = useState("loading");
@@ -340,7 +351,7 @@ function App(){
   var [search,setSearch]         = useState("");
   var [fGoals,setFGoals]         = useState([]);
   var [fTypes,setFTypes]         = useState([]);
-  var [fStatus,setFStatus]       = useState([]);  // [CHANGE] status filter
+  var [fStatus,setFStatus]       = useState([]);
   var [expanded,setExpanded]     = useState(null);
   var [tooltip,setTooltip]       = useState(null);
   var [shareMsg,setShareMsg]     = useState(false);
@@ -350,7 +361,40 @@ function App(){
   var [sourceUrl,setSourceUrl]   = useState("");
   var [loadError,setLoadError]   = useState("");
   var [isRefreshing,setIsRefreshing] = useState(false);
-  var isAdmin = new URLSearchParams(window.location.search||"").get("admin")==="1";
+
+  var urlParams = useMemo(()=>new URLSearchParams(window.location.search||""),[]);
+  var isAdmin  = urlParams.get("admin")==="1";
+  // [FIX] Locked mode — hides all toolbar controls for executive read-only links
+  var isLocked = urlParams.get("locked")==="1";
+
+  // [FIX] Hydrate all state from URL params on mount (shared view restore)
+  useEffect(function(){
+    var p = urlParams;
+    if (!p.get("view") && !p.get("locked")) return;
+    if (p.get("from"))    setStartM(p.get("from"));
+    if (p.get("to"))      setEndM(p.get("to"));
+    if (p.get("unit"))    setUnit(p.get("unit"));
+    if (p.get("group"))   setGroupBy(p.get("group"));
+    if (p.has("grouped")) setGrouped(p.get("grouped") === "1");
+    if (p.get("sort"))    setSortBy(p.get("sort"));
+    if (p.has("aud"))     setShowAud(p.get("aud") === "1");
+    if (p.has("leg"))     setShowLeg(p.get("leg") === "1");
+    if (p.has("hideTbd")) setHideTBD(p.get("hideTbd") === "1");
+    if (p.get("ms"))      setMilestoneView(p.get("ms"));
+    if (p.get("q"))       setSearch(p.get("q"));
+    if (p.get("goals")) {
+      var nums = p.get("goals").split(",");
+      setFGoals(GOAL_KEYS.filter(k => nums.includes(GOALS[k].num)));
+    }
+    if (p.get("types")) {
+      var types = p.get("types").split(",");
+      setFTypes(TYPE_KEYS.filter(k => types.includes(k)));
+    }
+    if (p.get("status")) {
+      var statuses = p.get("status").split("|");
+      setFStatus(STATUS_KEYS.filter(k => statuses.includes(k)));
+    }
+  },[]);
 
   function loadEmbeddedFallback(errMsg){
     var r=normalizeRows(parseTSV(FALLBACK_TSV));
@@ -377,25 +421,24 @@ function App(){
   var pct=useCallback(function(d){if(!d)return null;var D=new Date(d),t=VE-VS;return Math.max(0,Math.min(100,((D-VS)/t)*100));},[VS,VE]);
   var cols=useMemo(function(){return unit==="month"?genMonths(VS,VE):genQuarters(VS,VE);},[VS,VE,unit]);
 
-  // Initiatives only: cat==="initiative"
   var allInit=useMemo(function(){return items.filter(i=>i.cat==="initiative");},[items]);
   var msItems=useMemo(function(){return items.filter(i=>i.cat==="comms"||i.cat==="tech");},[items]);
 
-  // [CHANGE] KPI counts derived from all initiatives (pre-filter) for the summary strip
+  // [FIX] KPI counts — now live from data, with hasAnyStatus flag to control card state
   var kpi=useMemo(function(){
     var total=allInit.length;
     var counts={};
     STATUS_KEYS.forEach(k=>{counts[k]=0;});
-    var noStatus=0;
-    allInit.forEach(function(i){if(i.status&&counts[i.status]!==undefined)counts[i.status]++;else noStatus++;});
-    return {total,counts,noStatus};
+    var withStatus=0;
+    allInit.forEach(function(i){if(i.status&&counts[i.status]!==undefined){counts[i.status]++;withStatus++;}});
+    return {total,counts,hasAnyStatus:withStatus>0};
   },[allInit]);
 
   var filtered=useMemo(function(){
     var d=allInit.filter(function(r){
       if(fGoals.length&&!fGoals.includes(r.goal))return false;
       if(fTypes.length&&!fTypes.includes(r.type))return false;
-      if(fStatus.length&&!fStatus.includes(r.status||""))return false; // [CHANGE]
+      if(fStatus.length&&!fStatus.includes(r.status||""))return false;
       if(hideTBD&&isTBDItem(r))return false;
       if(search){var q=search.toLowerCase();if(!r.name.toLowerCase().includes(q)&&!r.id.toLowerCase().includes(q))return false;}
       return true;
@@ -439,6 +482,48 @@ function App(){
     setFGoals([]);setFTypes([]);setFStatus([]);setExpanded(null);
   }
 
+  // [FIX] Full-state share URL builder
+  function shareView(){
+    var p = new URLSearchParams();
+    p.set("view","share");
+    p.set("from",startM);
+    p.set("to",endM);
+    p.set("unit",unit);
+    p.set("group",groupBy);
+    p.set("grouped",grouped?"1":"0");
+    p.set("sort",sortBy);
+    p.set("aud",showAud?"1":"0");
+    p.set("leg",showLeg?"1":"0");
+    p.set("hideTbd",hideTBD?"1":"0");
+    p.set("ms",milestoneView);
+    if(fGoals.length)p.set("goals",fGoals.map(g=>GOALS[g].num).join(","));
+    if(fTypes.length)p.set("types",fTypes.join(","));
+    if(fStatus.length)p.set("status",fStatus.join("|"));
+    if(search)p.set("q",search);
+    navigator.clipboard.writeText(location.href.split("?")[0]+"?"+p).then(()=>{setShareMsg(true);setTimeout(()=>setShareMsg(false),2500);});
+  }
+  // [FIX] Locked executive share — same as above but adds locked=1
+  function shareLockedView(){
+    var p = new URLSearchParams();
+    p.set("view","share");
+    p.set("locked","1");
+    p.set("from",startM);
+    p.set("to",endM);
+    p.set("unit",unit);
+    p.set("group",groupBy);
+    p.set("grouped",grouped?"1":"0");
+    p.set("sort",sortBy);
+    p.set("aud",showAud?"1":"0");
+    p.set("leg",showLeg?"1":"0");
+    p.set("hideTbd",hideTBD?"1":"0");
+    p.set("ms",milestoneView);
+    if(fGoals.length)p.set("goals",fGoals.map(g=>GOALS[g].num).join(","));
+    if(fTypes.length)p.set("types",fTypes.join(","));
+    if(fStatus.length)p.set("status",fStatus.join("|"));
+    if(search)p.set("q",search);
+    navigator.clipboard.writeText(location.href.split("?")[0]+"?"+p).then(()=>{setShareMsg(true);setTimeout(()=>setShareMsg(false),2500);});
+  }
+
   if(loadSt==="loading")return(
     <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,color:"#999"}}>
       <div style={{width:32,height:32,border:"3px solid #eee",borderTopColor:"#2471A3",borderRadius:"50%",animation:"spin .8s linear infinite"}}/>
@@ -474,15 +559,20 @@ function App(){
         </div>
         <div style={{display:"flex",gap:8,alignItems:"center"}}>
           <span style={{fontSize:11,padding:"3px 10px",borderRadius:12,background:"#f0f0f0",color:"#999"}}>{TODAY.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>
-          <button onClick={()=>{var p=new URLSearchParams();p.set("view","share");if(fGoals.length)p.set("goals",fGoals.map(g=>GOALS[g].num).join(","));if(fTypes.length)p.set("types",fTypes.join(","));navigator.clipboard.writeText(location.href.split("?")[0]+"?"+p).then(()=>{setShareMsg(true);setTimeout(()=>setShareMsg(false),2500);});}} style={{fontSize:11,padding:"4px 12px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#555",cursor:"pointer"}}>Share view</button>
-          <button onClick={reset} style={{fontSize:11,padding:"4px 12px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#999",cursor:"pointer"}}>Reset</button>
+          {/* [FIX] Locked view badge replaces controls */}
+          {isLocked ? (
+            <span style={{fontSize:10,padding:"4px 12px",borderRadius:12,background:"#D5F5E3",color:"#1E8449",fontWeight:600}}>Read-only view</span>
+          ) : (<>
+            <button onClick={shareView} style={{fontSize:11,padding:"4px 12px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#555",cursor:"pointer"}}>Share view</button>
+            <button onClick={shareLockedView} title="Copy a read-only link (toolbars hidden)" style={{fontSize:11,padding:"4px 12px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#555",cursor:"pointer"}}>Share locked</button>
+            <button onClick={reset} style={{fontSize:11,padding:"4px 12px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#999",cursor:"pointer"}}>Reset</button>
+          </>)}
         </div>
       </div>
       {shareMsg&&<div style={{padding:"4px 24px",background:"#D5F5E3",color:"#1E8449",fontSize:11,flexShrink:0}}>View link copied to clipboard</div>}
 
-      {/* KPI Summary Strip — total initiatives is live; status cards are placeholders until status column is populated */}
+      {/* [FIX] KPI Summary Strip — now live when status data exists, placeholder only when zero initiatives have status */}
       <div style={{padding:"8px 24px",borderBottom:"1px solid #ebebeb",display:"flex",gap:12,alignItems:"center",background:"#fafafa",flexShrink:0}}>
-        {/* Live: total initiative count */}
         <div style={{display:"flex",alignItems:"center",gap:5,padding:"5px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff"}}>
           <span style={{fontSize:22,fontWeight:700,color:"#111",lineHeight:1}}>{kpi.total}</span>
           <span style={{fontSize:10.5,color:"#999",lineHeight:1.3}}>total<br/>initiatives</span>
@@ -490,15 +580,24 @@ function App(){
 
         <div style={{width:1,height:32,background:"#e8e8e8",flexShrink:0}}/>
 
-        {/* Placeholder status cards — will become live filters once status column is populated */}
-        {STATUS_KEYS.map(function(sk){
+        {/* [STATUS TRACKING] Visible only when ENABLE_STATUS_TRACKING=true */}
+        {ENABLE_STATUS_TRACKING && STATUS_KEYS.map(function(sk){
           var cfg=STATUS_CFG[sk];
+          var count=kpi.counts[sk];
+          var hasData=kpi.hasAnyStatus;
+          var isActive=fStatus.includes(sk);
           return(
-            <div key={sk} title={"Status tracking coming soon — populate the 'status' column in the sheet to enable"}
-              style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",border:"1px dashed #e0e0e0",borderRadius:8,background:"#fafafa",opacity:.55,userSelect:"none"}}>
+            <div key={sk}
+              className={hasData&&!isLocked?"kpi-card-active":""}
+              onClick={hasData&&!isLocked?function(){setFStatus(isActive?fStatus.filter(s=>s!==sk):[sk]);}:undefined}
+              title={hasData?(isActive?"Click to clear filter":"Click to filter by "+sk):"Populate the 'status' column in the sheet to enable"}
+              style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",
+                border:isActive?"2px solid "+cfg.dot:(hasData?"1px solid #e0e0e0":"1px dashed #e0e0e0"),
+                borderRadius:8,background:isActive?cfg.bg:(hasData?"#fff":"#fafafa"),
+                opacity:hasData?1:.55,userSelect:"none",cursor:hasData&&!isLocked?"pointer":"default"}}>
               <span style={{width:8,height:8,borderRadius:"50%",background:cfg.dot,flexShrink:0}}/>
-              <span style={{fontSize:16,fontWeight:700,color:"#ccc",lineHeight:1}}>—</span>
-              <span style={{fontSize:10.5,color:"#aaa",whiteSpace:"nowrap"}}>{cfg.label}</span>
+              <span style={{fontSize:16,fontWeight:700,color:hasData?"#111":"#ccc",lineHeight:1}}>{hasData?count:"—"}</span>
+              <span style={{fontSize:10.5,color:hasData?"#666":"#aaa",whiteSpace:"nowrap"}}>{cfg.label}</span>
             </div>
           );
         })}
@@ -510,7 +609,8 @@ function App(){
         </div>
       </div>
 
-      {/* [CHANGE] Toolbar split into two tiers: primary controls top, secondary bottom */}
+      {/* [FIX] Toolbars hidden in locked mode */}
+      {!isLocked && <>
       {/* Tier 1: Date range, view, group, sort */}
       <div style={{padding:"8px 24px",borderBottom:"1px solid #f0f0f0",display:"flex",gap:14,alignItems:"center",flexWrap:"wrap",flexShrink:0,background:"#fafafa"}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -555,6 +655,8 @@ function App(){
         <span style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:600}}>Filter</span>
         <MultiSelect label="Goal" options={GOAL_KEYS} selected={fGoals} onChange={setFGoals} getKey={k=>k} getLabel={k=>"G"+GOALS[k].num+": "+GOALS[k].short} getColor={k=>GOALS[k].color}/>
         {showAud&&<MultiSelect label="Audience" options={TYPE_KEYS} selected={fTypes} onChange={setFTypes} getKey={k=>k} getLabel={k=>k} getColor={k=>TYPE_COLOR[k]}/>}
+        {/* [FIX] Status filter — new MultiSelect in the toolbar */}
+        <MultiSelect label="Status" options={STATUS_KEYS} selected={fStatus} onChange={setFStatus} getKey={k=>k} getLabel={k=>k} getColor={k=>STATUS_CFG[k].dot}/>
         <Sep/>
         <span style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:600}}>Milestones</span>
         <SegBtn active={milestoneView==="both"} onClick={()=>setMilestoneView("both")}>Both</SegBtn>
@@ -565,6 +667,7 @@ function App(){
         <Tog on={showLeg} onClick={()=>setShowLeg(v=>!v)}>Legend</Tog>
         <Tog on={hideTBD} onClick={()=>setHideTBD(v=>!v)}>Hide TBD</Tog>
       </div>
+      </>}
 
       {/* Legend */}
       {showLeg&&(
@@ -584,11 +687,11 @@ function App(){
             <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:22,height:6,borderRadius:2,background:"repeating-linear-gradient(90deg,#ccc 0,#ccc 3px,transparent 3px,transparent 6px)",display:"inline-block"}}/>TBD</span>
             <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:1.5,height:12,background:"#C0392B",display:"inline-block"}}/>Today</span>
           </div>
-          {/* [CHANGE] Status legend */}
-          <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
+          {/* [STATUS TRACKING] Visible only when ENABLE_STATUS_TRACKING=true */}
+          {ENABLE_STATUS_TRACKING && <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
             <span style={{fontSize:9,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:700}}>Status</span>
             {STATUS_KEYS.map(sk=>{var c=STATUS_CFG[sk];return <span key={sk} style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:7,height:7,borderRadius:"50%",background:c.dot,display:"inline-block"}}/>{sk}</span>;})}
-          </div>
+          </div>}
         </div>
       )}
 
@@ -610,11 +713,10 @@ function App(){
 
           <div style={{flex:1,display:"flex",overflow:"hidden"}}>
 
-            {/* Label panel */}
-            <div id="lbl-panel" style={{width:LABEL_W,minWidth:LABEL_W,flexShrink:0,borderRight:"1px solid #e5e5e5",overflowY:"hidden",overflowX:"hidden"}}>
+            {/* [FIX] Label panel — overflowY changed to "auto" so sticky headers work */}
+            <div id="lbl-panel" style={{width:LABEL_W,minWidth:LABEL_W,flexShrink:0,borderRight:"1px solid #e5e5e5",overflowY:"auto",overflowX:"hidden"}}>
               {groups.map(function([gKey,gItems]){return(
                 <div key={gKey}>
-                  {/* [CHANGE] Sticky group header */}
                   {grouped&&(
                     <div style={{height:ROW_H,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 14px",background:"#f5f5f5",borderBottom:"1px solid #ebebeb",borderLeft:"3px solid "+gc(gKey),position:"sticky",top:0,zIndex:5}}>
                       <span style={{fontSize:11,fontWeight:600,color:gc(gKey)}}>{gl(gKey)}</span>
@@ -624,11 +726,12 @@ function App(){
                   {gItems.map(function(item){return(
                     <div key={item.id} className="lbl-row" onClick={()=>setExpanded(expanded===item.id?null:item.id)}
                       style={{height:ROW_H,display:"flex",alignItems:"center",gap:4,padding:"0 6px 0 10px",borderBottom:"1px solid #f5f5f5",borderLeft:grouped?"3px solid "+gc(gKey)+"22":"none",overflow:"hidden",cursor:"pointer",background:expanded===item.id?"#EBF5FB":"transparent",transition:"background .1s"}}>
+                      {/* [STATUS TRACKING] Visible only when ENABLE_STATUS_TRACKING=true */}
+                      {ENABLE_STATUS_TRACKING && <StatusDot status={item.status}/>}
                       {showAud&&TYPE_SHORT[item.type]&&<span style={{fontSize:7.5,fontWeight:700,width:14,height:14,borderRadius:3,display:"inline-flex",alignItems:"center",justifyContent:"center",background:TYPE_BG[item.type]||"#eee",color:TYPE_COLOR[item.type]||"#666",flexShrink:0}}>{TYPE_SHORT[item.type]}</span>}
                       {isTBDItem(item)&&<span style={{fontSize:7,fontWeight:600,padding:"1px 3px",borderRadius:3,background:"#f0f0f0",color:"#ccc",flexShrink:0,border:"1px solid #e8e8e8"}}>TBD</span>}
                       <span style={{fontSize:11,color:"#333",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1,lineHeight:1}} title={item.name}>{item.name}</span>
                       <a href={ou(item.id)} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{flexShrink:0,opacity:.3,display:"flex"}} title="Open overview"><ExtLink/></a>
-                      {/* [CHANGE] Chevron affordance */}
                       <span className="lbl-chevron" style={{fontSize:9,color:"#ccc",flexShrink:0,opacity:expanded===item.id?.5:0,transition:"opacity .1s"}}>›</span>
                     </div>
                   );})}
@@ -646,7 +749,6 @@ function App(){
               <div style={{minWidth:Math.max(500,cols.length*80),position:"relative"}}>
                 {groups.map(function([gKey,gItems]){return(
                   <div key={gKey}>
-                    {/* [CHANGE] Sticky group header on timeline side too */}
                     {grouped&&<div style={{height:ROW_H,background:"#f5f5f5",borderBottom:"1px solid #ebebeb",position:"relative",top:0,zIndex:5}}><GridLines n={cols.length}/></div>}
                     {gItems.map(function(item){
                       var l2=pct(item.start),r2=pct(item.end),w=(l2!==null&&r2!==null)?r2-l2:0;
@@ -657,16 +759,17 @@ function App(){
                       var qR=qCol?pct(qCol.end.toISOString().slice(0,10)):null;
                       var qW=(qL!==null&&qR!==null)?qR-qL:0;
 
+                      var statusStripe = item.status && STATUS_CFG[item.status] ? STATUS_CFG[item.status].dot : null;
+
                       return(
                         <div key={item.id} style={{height:ROW_H,position:"relative",borderBottom:"1px solid #f5f5f5",background:expanded===item.id?"#EBF5FB":"transparent",overflow:"visible"}}>
                           <GridLines n={cols.length} faint={true}/>
 
-                          {/* [CHANGE] Bar left-edge tinted by status if at risk/off track */}
+                          {/* [STATUS TRACKING] Bar with status stripe visible only when ENABLE_STATUS_TRACKING=true */}
                           {hasDates&&w>0.2&&(
                             <div onClick={()=>setExpanded(expanded===item.id?null:item.id)} title={item.name}
-                              style={{position:"absolute",top:8,height:20,borderRadius:4,cursor:"pointer",left:l2+"%",width:w+"%",background:barCol,opacity:.88,display:"flex",alignItems:"center",overflow:"hidden",zIndex:2,
-                                boxShadow:"none"
-                              }}>
+                              style={{position:"absolute",top:8,height:20,borderRadius:4,cursor:"pointer",left:l2+"%",width:w+"%",background:barCol,opacity:.92,display:"flex",alignItems:"center",overflow:"hidden",zIndex:2}}>
+                              {ENABLE_STATUS_TRACKING && statusStripe&&<div style={{width:3,height:"100%",background:statusStripe,flexShrink:0,borderRadius:"4px 0 0 4px"}}/>}
                               {w>5&&<span style={{fontSize:9.5,fontWeight:500,padding:"0 5px",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.name}</span>}
                             </div>
                           )}
@@ -676,14 +779,14 @@ function App(){
                               <span style={{fontSize:8,fontWeight:600,color:barCol,opacity:1}}>{item.quarter}</span>
                             </div>
                           )}
+                          {/* [FIX] TBD bar — reduced height and opacity to be less visually noisy */}
                           {!hasDates&&!qW&&(
                             <div onClick={()=>setExpanded(expanded===item.id?null:item.id)} title="Dates TBD"
-                              style={{position:"absolute",top:12,left:"2%",right:"2%",height:10,borderRadius:3,cursor:"pointer",zIndex:2,background:"repeating-linear-gradient(90deg,#d8d8d8 0,#d8d8d8 4px,transparent 4px,transparent 8px)",opacity:.5,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                              <span style={{fontSize:7.5,color:"#aaa",fontWeight:600,background:"rgba(255,255,255,.9)",padding:"0 3px",borderRadius:2}}>TBD</span>
+                              style={{position:"absolute",top:14,left:"4%",right:"4%",height:8,borderRadius:3,cursor:"pointer",zIndex:2,background:"repeating-linear-gradient(90deg,#e0e0e0 0,#e0e0e0 4px,transparent 4px,transparent 8px)",opacity:.35,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                              <span style={{fontSize:7,color:"#bbb",fontWeight:600,background:"rgba(255,255,255,.9)",padding:"0 3px",borderRadius:2}}>TBD</span>
                             </div>
                           )}
 
-                          {/* [CHANGE] Milestone icons reduced to 16px to fit within 36px row */}
                           {spread.map(function(m){return(
                             <span key={m.id}
                               onMouseEnter={e=>setTooltip({x:e.clientX,y:e.clientY,name:m.name,date:fmtDate(m.start),cat:m.cat})}
@@ -699,18 +802,22 @@ function App(){
                   </div>
                 );})}
 
+                {/* [FIX] Today line — slightly wider, with a subtle column tint */}
                 {todayP!==null&&todayP>=0&&todayP<=100&&(
-                  <div style={{position:"absolute",top:0,bottom:0,left:todayP+"%",width:1.5,background:"#C0392B",opacity:.55,zIndex:5,pointerEvents:"none"}}>
-                    <div style={{position:"absolute",top:4,left:3,fontSize:8,fontWeight:700,background:"#C0392B",color:"#fff",padding:"2px 5px",borderRadius:3,whiteSpace:"nowrap"}}>Today</div>
+                  <>
+                  <div style={{position:"absolute",top:0,bottom:0,left:"calc("+todayP+"% - 12px)",width:24,background:"rgba(192,57,43,.03)",zIndex:3,pointerEvents:"none"}}/>
+                  <div style={{position:"absolute",top:0,bottom:0,left:todayP+"%",width:1.5,background:"#C0392B",opacity:.6,zIndex:5,pointerEvents:"none"}}>
+                    <div style={{position:"absolute",top:4,left:3,fontSize:9,fontWeight:700,background:"#C0392B",color:"#fff",padding:"2px 6px",borderRadius:3,whiteSpace:"nowrap"}}>Today</div>
                   </div>
+                  </>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Detail panel */}
-        <div style={{width:expItem?380:0,minWidth:expItem?380:0,maxWidth:"38vw",borderLeft:expItem?"1px solid #e5e5e5":"none",background:"#fafafa",overflow:"hidden",transition:"width .2s,min-width .2s",flexShrink:0,display:"flex",flexDirection:"column"}}>
+        {/* [FIX] Detail panel — responsive width with clamp */}
+        <div style={{width:expItem?"clamp(320px, 30vw, 420px)":"0px",minWidth:expItem?"320px":"0px",maxWidth:"38vw",borderLeft:expItem?"1px solid #e5e5e5":"none",background:"#fafafa",overflow:"hidden",transition:"width .2s,min-width .2s",flexShrink:0,display:"flex",flexDirection:"column"}}>
           {expItem&&<>
             <div style={{padding:"16px 18px 12px",borderBottom:"1px solid #ebebeb",background:"#fff",flexShrink:0}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,marginBottom:8}}>
@@ -718,8 +825,8 @@ function App(){
                   <div style={{fontSize:14,fontWeight:700,lineHeight:1.35,overflowWrap:"anywhere",color:"#111",marginBottom:4}}>{expItem.name}</div>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <span style={{fontSize:10,color:"#ccc",fontFamily:"monospace"}}>{expItem.id}</span>
-                    {/* [CHANGE] Full status badge in detail panel header */}
-                    {expItem.status&&<StatusBadge status={expItem.status}/>}
+                    {/* [STATUS TRACKING] Visible only when ENABLE_STATUS_TRACKING=true */}
+                    {ENABLE_STATUS_TRACKING && expItem.status&&<StatusBadge status={expItem.status}/>}
                   </div>
                 </div>
                 <button onClick={()=>setExpanded(null)} style={{border:"none",background:"none",fontSize:18,color:"#ccc",cursor:"pointer",lineHeight:1,padding:"0 4px",flexShrink:0}}>×</button>
@@ -734,11 +841,10 @@ function App(){
               {expItem.description&&<div style={{marginBottom:10,padding:"10px 12px",borderRadius:6,background:"#fff",border:"1px solid #ebebeb",fontSize:11.5,color:"#444",lineHeight:1.65,whiteSpace:"pre-wrap"}}><div style={{fontSize:9,textTransform:"uppercase",letterSpacing:.8,color:"#ccc",fontWeight:600,marginBottom:5}}>Description</div>{expItem.description}</div>}
               {expItem.notes&&<div style={{marginBottom:14,padding:"10px 12px",borderRadius:6,background:"#fff",border:"1px solid #ebebeb",fontSize:11.5,color:"#444",lineHeight:1.65,whiteSpace:"pre-wrap"}}><div style={{fontSize:9,textTransform:"uppercase",letterSpacing:.8,color:"#ccc",fontWeight:600,marginBottom:5}}>Notes</div>{expItem.notes}</div>}
 
-              {/* [CHANGE] Dates are now formatted via fmtDate() */}
               {[
                 ["Goal",     GOALS[expItem.goal]?"Goal "+GOALS[expItem.goal].num+": "+GOALS[expItem.goal].short:expItem.goal],
                 ["Audience", expItem.type],
-                ["Status",   expItem.status||"Not set"],
+                ...(ENABLE_STATUS_TRACKING?[["Status",   expItem.status||"Not set"]]:[] ),
                 ["Timing",   hasFullDates(expItem)?null:(expItem.quarter?"Target "+expItem.quarter:"TBD")],
                 ["Start",    hasFullDates(expItem)?fmtDate(expItem.start):null],
                 ["End",      hasFullDates(expItem)?fmtDate(expItem.end):null],
@@ -769,7 +875,6 @@ function App(){
                     <div key={m.id} style={{fontSize:11,display:"flex",alignItems:"center",gap:8,padding:"7px 10px",marginBottom:4,borderRadius:5,border:"1px solid "+MC+"33",background:MC+"08"}}>
                       <MsIcon icon={m.icon} sz={14} col={MC} style={{flexShrink:0}}/>
                       <span style={{flex:1,overflowWrap:"anywhere",lineHeight:1.4,color:"#333"}}>{m.name}</span>
-                      {/* [CHANGE] Formatted milestone date */}
                       <span style={{color:"#bbb",fontSize:10,flexShrink:0,whiteSpace:"nowrap"}}>{fmtDate(m.start)}</span>
                     </div>
                   );})}
@@ -780,11 +885,10 @@ function App(){
         </div>
       </div>
 
-      {/* [CHANGE] Footer: always shows last-updated time; admin extras still gated on ?admin=1 */}
+      {/* [FIX] Footer — full date+time, and offline badge */}
       <div style={{padding:"4px 24px",borderTop:"1px solid #ebebeb",background:"#fafafa",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexShrink:0,fontSize:11,color:"#888"}}>
-        {/* Always-visible freshness timestamp */}
         <span style={{fontSize:10,color:"#bbb"}}>
-          {dataLoadedAt?"Data as of "+dataLoadedAt.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):""}{dataSource==="embedded fallback"?" (offline copy)":""}
+          {dataLoadedAt?"Data as of "+fmtDateTime(dataLoadedAt):""}{dataSource==="embedded fallback"?" (offline copy)":""}
         </span>
         {isAdmin&&(
           <div style={{display:"flex",alignItems:"center",gap:8}}>
