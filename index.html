@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>All of Us 2026 Program Roadmap</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13.5px;overflow:hidden;background:#fff;}
+    button,select,input{font-family:inherit;}
+    ::-webkit-scrollbar{width:6px;height:6px;}
+    ::-webkit-scrollbar-thumb{background:#ddd;border-radius:3px;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    /* [CHANGE] Hover affordance on label rows */
+    .lbl-row:hover{background:#f7fafd !important;}
+    .lbl-row:hover .lbl-chevron{opacity:.5 !important;}
+  </style>
+</head>
+<body style="height:100%;display:flex;flex-direction:column;">
+<div id="root" style="flex:1;display:flex;flex-direction:column;overflow:hidden;"></div>
+<script type="text/babel">
+
+// ─── Embedded fallback ───────────────────────────────────────────────────────
+const FALLBACK_TSV = `id\tname\tstart\tend\tgoal\ttype\tcat\tparent\ticon\toverviewUrl\tshowOnRoadmap\tquarter\tstatus\tnotes\n
+1.3.18\tImplement Pediatrics 7-12\t4/8/26\t7/16/26\t1\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/1-3-18-implement-pediatrics-7-12\tTRUE\t\tOn Track\testimate includes 0-6 in new UI and opening 7-12 pending scope fits into 4 sprints total \n\nscope has not been confirmed or sized for 7-12\n
+\tUI/UX - Pediatrics\t2/26/26\t7/14/26\t\t\t\t1.3.18\t\t\tTRUE\t\t\t\n
+\tReassessment - Pedro Peds UAT\t6/26/26\t7/10/26\t\t\t\t1.3.18\t\t\tTRUE\t\t\t\n
+\tReassessment - Pedro Peds - technical readiness\t4/22/26\t7/30/26\t\t\t\t1.3.18\tdiamond\t\tTRUE\t\t\t\n
+\tPediatrics 7-12 - F&F Launch\t8/4/26\t8/11/26\t\t\tcomms\t1.3.18\tstar\t\tTRUE\t\t\t\n
+\tPediatrics 7-12 - Soft Launch\t7/28/26\t8/25/26\t\t\t\t1.3.18\t\t\tTRUE\t\t\tBetty Brand New + All Participants who have new UX and already have children enrolled\n
+\tPediatrics 7-12 - Full Enablement\t\t\t\t\ttech\t1.3.18\tdiamond\t\tTRUE\t\t\t\n
+\tPeds National Marking Campaign\t\t\t\t\t\t1.3.18\t\t\tTRUE\t\t\t\n
+1.3.19\tPediatrics 13+ Protocol\t10/1/25\t10/1/26\t1\tInternal/Consortium\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/1-3-19-pediatrics-13-protocol\tTRUE\t\tAt Risk\t\n
+1.5.11\tWeb Consolidation and Modernization\t1/1/26\t12/31/26\t1\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/1-5-11-web-consolidation-and-modernization\tTRUE\t\tOn Track\t\n
+\tPlatform Analytics\t1/1/26\t12/31/26\t\t\t\t1.5.11\t\t\tTRUE\t\t\t\n
+1.5.13\tEnhance the Journeys UI/UX\t1/1/26\t12/31/26\t1\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/1-5-13-enhance-the-journeys-uiux\tTRUE\t\tOn Track\t\n
+1.5.14\tLogin and Password Reset Improvements\t1/26/26\t6/19/26\t1\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/1-5-14-passwordless-login\tTRUE\t\tOff Track\tIncludes incremental improvements and Passwordless approach (pending needed approvals) NORC please advise if this should take longer based on Protocol updates\n
+\tParticipant Portal - Passwordless Login\t3/11/26\t7/14/26\t\t\t\t1.5.14\t\t\tTRUE\t\t\t\n
+1.5.7\tReassessment MVP\t1/1/26\t4/29/26\t1\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/1-5-7-apmp-preparation-for-reassessment\tTRUE\t\tOn Track\t\n
+2.1.8\tCLAD Data Workstreams\t1/1/26\t12/31/26\t2\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-1-8-clad-data-workstreams-non-ehr\tTRUE\t\tOn Track\t\n
+2.2.10\tGenome Center Processing\t3/27/26\t4/30/27\t2\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-2-10-genome-center-processing\tTRUE\t\tOn Track\t\n
+2.2.11\tSurvey Data Transfer Frequency Improvements\t3/27/26\t12/31/26\t2\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-2-11-survey-data-transfer-frequency-improvements\tTRUE\t\tOn Track\t\n
+2.2.7\tCLAD HIE/HIN EHR Expansion\t4/30/26\t12/31/26\t2\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-2-7-clad-hiehin-ehr-expansion\tTRUE\t\tAt Risk\t\n
+2.2.8\tCLAD DRC EHR Data Harmonization\t4/30/26\t12/31/26\t2\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-2-8-clad-drc-ehr-data-harmonization\tTRUE\t\tOn Track\t\n
+2.4.6\tCheck-In (Reassessment)\t2/11/26\t8/31/26\t2\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-4-6-check-in-reassessment\tTRUE\t\tOn Track\tcurrent timeline assumes 75k max per day\n
+\tReassessment - Connie Complete - technical readiness\t2/11/26\t4/19/26\t\t\ttech\t2.4.6\t\t\tTRUE\t\t\t\n
+\tReassessment - Connie Complete UAT\t4/6/26\t4/14/26\t\t\ttech\t2.4.6\t\t\tTRUE\t\t\t\n
+\tReassessment - Betty Brandnew - technical readiness\t4/8/26\t6/16/26\t\t\ttech\t2.4.6\t\t\tTRUE\t\t\t\n
+\tReassessment - Penny Partway - technical readiness\t5/6/26\t7/14/26\t\t\ttech\t2.4.6\t\t\tTRUE\t\t\t\n
+\tReassessment - Patrick LegacyPartway - technical readiness\t5/6/26\t8/11/26\t\t\ttech\t2.4.6\t\t\tTRUE\t\t\t\n
+\tReassessment - Connie Complete (F&F) Launch\t4/29/26\t4/29/26\t\t\tcomms\t2.4.6\tstar\t\tTRUE\t\t\t\n
+\tReassessment - Connie Complete (Soft) Launch\t5/6/26\t5/18/26\t\t\tcomms\t2.4.6\t\t\tTRUE\t\t\t\n
+\tReassessment - Connie Complete Full Enablement\t5/18/26\t5/18/26\t\t\tcomms\t2.4.6\tdiamond\t\tTRUE\t\t\t\n
+2.5.11\tRelease CDR v9 Off-Cycle - CLAD Hex & Environmental Linkage (CHEL)\t1/1/26\t9/30/26\t2\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-5-11-release-cdr-v9-off-cycle-chel\tTRUE\t\tOn Track\t\n
+2.5.12\tRelease CDR v9 Off-Cycle - Apple HealthKit\t3/2/26\t9/30/26\t2\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-5-12-release-cdr-v9-off-cycle-apple-healthkit\tTRUE\t\tOn Track\t\n
+2.5.13\tRelease CDR v10\t4/30/26\t3/31/28\t2\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-5-13-release-cdr-v10\tTRUE\t\tOn Track\t\n
+2.5.14\tRelease CDR v11\t4/30/26\t4/27/29\t2\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-5-14-release-cdr-v11\tTRUE\t\tOn Track\t\n
+2.5.7\tCDR Release v9\t1/1/26\t6/30/26\t2\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/2-5-7-cdr-release-v9\tTRUE\t\tOn Track\t\n
+\tLaunch\t6/30/26\t6/30/26\t\t\ttech\t2.5.7\tstar\t\tTRUE\t\t\t\n
+3.1.10\tExtramural Researcher PRS Strategy (X01)\t\t\t3\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-1-10-extramural-researcher-prs-strategy\tTRUE\t\t\t\n
+3.1.5\tLab Inventory Management System (LIMS) Integration\t12/30/25\t4/30/26\t3\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-1-5-lims-integration\tTRUE\t\tOn Track\t\n
+3.1.8\tPRS APMP Framework\t1/1/26\t12/31/26\t3\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-1-8-prs-apmp-framework\tTRUE\t\tOn Track\tDevelopment of features for PRS framework folded into launch of each PRS at a minimum (see proposed scope). Anticipate ongoing dev effort with features.;In development- Includes Tech, NORC/IBM, DRC, Biobank\n
+\tPRS Dashboard\t1/1/26\t2/1/26\t\t\t\t3.1.8\t\t\tTRUE\t\t\t\n
+3.1.9\tPRS Web Portal\t1/1/26\t8/28/26\t3\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-1-9-prs-web-portal\tTRUE\t\tOn Track\tMVP April 30, 2026\nFull Launch: August 28, 2026\n
+3.2.11\tExploring the Mind (EtM) PRS Expansion\t4/1/26\t9/30/26\t3\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-2-11-exploring-the-mind-prs-expansion\tTRUE\t\tAt Risk\tPRS team was targeting Sept 2026\n
+3.2.12\tEducation and Assessment of Genetic Literacy (EAGL) PRS\t\t\t3\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-2-12-eagl-prs\tTRUE\t\t\tNo timeline yet (leave off roadmap)\n
+3.2.13\tAutomated Self-Administered 24-hour Dietary Assessment Tool (ASA24)\t\t\t3\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-2-13-asa24\tTRUE\t\t\tNo timeline yet, not a priority (leave off roadmap); NORC/IBM to integrate the ASA24 in Q3??\n
+3.2.2\tNutrition for Precision Health (NPH) PRS\t1/1/26\t6/25/26\t3\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-2-2-nph-partnered-research-study\tTRUE\t\tOn Track\tAPMP new UI/UX availability\n
+3.2.3\tExposomics PRS\t1/1/26\t1/1/27\t3\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-2-3-exposomics-prs\tTRUE\t\tOn Track\t\n
+3.2.4\tGenotype to Phenotype PRS\t5/1/26\t6/30/26\t3\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-2-4-genotype-to-phenotype-prs\tTRUE\t\tOn Track\t\n
+3.2.5\tDisability Health and Functioning (WDFAB)\t1/1/26\t7/31/26\t3\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-2-5-disability-health-functioning-prs\tTRUE\t\tOn Track\tHIGHEST PRIORITY PRS. TARGETING July; use modules from third party (similar to idea for EtM)\n
+3.2.6\tEyes on Health PRS\t1/1/26\t7/31/26\t3\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-2-6-eyes-on-health-prs\tTRUE\t\tOn Track\t\n
+3.2.7\tYour Whole Health (YWH) PRS\t1/27/26\t8/31/26\t3\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/3-2-7-your-whole-health-prs\tTRUE\t\tOn Track\t\n
+4.1.12\tMultimodal Health Prediction Model Development\t1/1/26\t12/31/26\t4\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/4-1-12-multimodal-health-prediction-model-development\tTRUE\t\tOn Track\t\n
+4.2.14\tControlled Tier + Development and Launch (CT+)\t6/2/25\t12/31/26\t4\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/4-2-14-controlled-tier-plus\tTRUE\t\tOn Track\t\n
+4.2.15\tResearcher Workbench 2.0 Upgrade\t11/1/24\t6/30/26\t4\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/4-2-15-researcher-workbench-2-0-upgrade\tTRUE\t\tAt Risk\t\n
+4.2.18\tData Challenge\t4/1/26\t3/31/28\t4\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/4-2-18-data-challenge\tTRUE\t\tOn Track\t\n
+4.4.10\tPublications Modernization\t4/1/26\t12/31/26\t4\tInternal/Consortium\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/4-4-10-publication-reporting-modernization\tTRUE\t\tOn Track\t\n
+4.4.11\tLarge Language Model (LLM) Synthesis Engine\t4/1/26\t12/31/26\t4\tInternal/Consortium\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/4-4-11-scientific-output-meaning-insights-generation\tTRUE\t\tOn Track\t\n
+4.4.12\tExpanded Tracking\t4/1/26\t12/31/26\t4\tInternal/Consortium\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/4-4-12-downstream-impact-reporting-feasibility-assessment\tTRUE\t\tOn Track\t\n
+5.1.12\tAll of Us Science Day 2026\t\t4/15/26\t5\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/5-1-12-all-of-us-science-day\tTRUE\t\tOn Track\t\n
+5.1.13\tParticipant Convenings\t4/1/26\t11/30/26\t5\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/5-1-13-participant-convenings\tTRUE\t\tOn Track\t\n
+5.5.1\tParticipant as Partners\t\t\t5\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/5-5-1-participants-as-partners\tTRUE\t\t\t\n
+5.5.2\tPolygenic Risk Score (PgRS)\t7/1/26\t\t5\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/5-5-2-polygenic-risk-score-pgrs\tTRUE\t\tOn Track\t\n
+6.1.1\tDemonstration Projects\t7/1/25\t7/31/26\t6\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/6-1-1-demonstration-driver-projects\tTRUE\t\tOn Track\t\n
+6.1.3\tData Management Plan Implementation at DRC\t7/1/25\t7/1/26\t6\tResearcher\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/6-1-3-data-management-plan-implementation\tTRUE\t\tOn Track\t\n
+6.2.16\tPediatric Analytics\t5/20/26\t7/16/26\t6\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/6-2-16-pediatric-analytics\tTRUE\t\tOn Track\t\n
+6.2.17\tPlatform Analytics\t6/1/26\t12/31/26\t6\tParticipant\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/6-2-17-platform-analytics\tTRUE\t\tOn Track\tTableau Next utilized for APMP dashboards\n
+6.3.4\tTraining and Education Platform Strategy\t\t\t6\tInternal/Consortium\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/6-3-4-training-and-education-platform\tTRUE\t\t\t\n
+6.3.5\tResource Oversight Improvements\t\t\t6\tInternal/Consortium\tinitiative\t\t\thttps://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/6-3-5-resource-oversight-improvements\tTRUE\t\t\t\n`;
+
+// ─── TSV parser ──────────────────────────────────────────────────────────────
+function parseTSV(tsv) {
+  var lines = tsv.trim().split("\n");
+  var hdrs  = lines[0].split("\t").map(function(h){ return h.trim(); });
+  return lines.slice(1).filter(function(l){ return l.trim(); }).map(function(l){
+    var cells = l.split("\t");
+    var o = {};
+    hdrs.forEach(function(h,i){ o[h] = (cells[i]||"").trim(); });
+    return o;
+  });
+}
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+const LIVE_SHEET_ID  = "1UAVBmkBC1l-Pnp5UMe_72FTjv_03Xwe9fcgu5nHPcQg";
+const LIVE_SHEET_GID = "0";
+
+// [CHANGE] Status config — maps sheet values to display label, color, and dot color
+const STATUS_CFG = {
+  "On Track":  { label:"On Track",  dot:"#1E8449", bg:"#D5F5E3", tx:"#1E8449" },
+  "At Risk":   { label:"At Risk",   dot:"#B7950B", bg:"#FEF9E7", tx:"#7D6008" },
+  "Off Track": { label:"Off Track", dot:"#C0392B", bg:"#FDECEA", tx:"#C0392B" },
+};
+const STATUS_KEYS = ["On Track","At Risk","Off Track"];
+
+const MONTHS  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+// [CHANGE] ROW_H increased from 32→36 for breathing room
+const MC      = "#F5A800";
+const ROW_H   = 36;
+const LABEL_W = 264;
+
+const GOAL_NUM_MAP = {
+  "1":"1-Enrollment & Retention","2":"2-Data Available to Researchers",
+  "3":"3-Partnered Research Studies","4":"4-Researcher Access & Impact",
+  "5":"5-Participant Return of Value","6":"6-Management & Operations",
+};
+const GOALS = {
+  "1-Enrollment & Retention":        {short:"Enrollment & Retention", num:"1", color:"#2471A3"},
+  "2-Data Available to Researchers": {short:"Data to Researchers",    num:"2", color:"#1E8449"},
+  "3-Partnered Research Studies":    {short:"Partnered Research",     num:"3", color:"#D35400"},
+  "4-Researcher Access & Impact":    {short:"Researcher Access",      num:"4", color:"#B7950B"},
+  "5-Participant Return of Value":   {short:"Return of Value",        num:"5", color:"#7D3C98"},
+  "6-Management & Operations":       {short:"Management & Ops",       num:"6", color:"#5D6D7E"},
+};
+const GOAL_KEYS  = Object.keys(GOALS);
+const TYPE_KEYS  = ["Participant","Researcher","Internal/Consortium"];
+const TYPE_COLOR = {"Participant":"#2471A3","Researcher":"#1E8449","Internal/Consortium":"#5D6D7E"};
+const TYPE_SHORT = {"Participant":"P","Researcher":"R","Internal/Consortium":"I"};
+const TYPE_BG    = {"Participant":"#D6EAF8","Researcher":"#D5F5E3","Internal/Consortium":"#EAECEE"};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function nf() {
+  for (var i=0;i<arguments.length;i++){var x=arguments[i];if(x!=null&&String(x).trim()!=="")return String(x).trim();}
+  return "";
+}
+function hasFullDates(item){ return Boolean(item&&item.start&&item.end); }
+function isTBDItem(item){ return Boolean(item&&!hasFullDates(item)&&!item.quarter); }
+function resolveGoal(r){var s=String(r||"").trim();return GOALS[s]?s:(GOAL_NUM_MAP[s]||"");}
+function extractParentId(p){if(!p)return "";var t=String(p).split(" ")[0].trim();return /^\d+(\.\d+)*$/.test(t)?t:"";}
+function goalOrder(g){return GOALS[g]?Number(GOALS[g].num):99;}
+
+// [CHANGE] Date formatter: "4/8/26" → "Apr 8, 2026"
+function fmtDate(s) {
+  if (!s) return "";
+  var d = new Date(s);
+  if (isNaN(d)) return s;
+  return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+}
+
+function genMonths(vs,ve){
+  var a=[],y=vs.getFullYear(),m=vs.getMonth();
+  for(;;){var s=new Date(y,m,1);if(s>ve)break;var qStr="Q"+(Math.floor(m/3)+1)+" "+y;a.push({label:MONTHS[m]+" "+y,start:s,end:new Date(y,m+1,0),q:qStr});if(++m>11){m=0;y++;}}
+  return a;
+}
+function genQuarters(vs,ve){
+  var a=[],y=vs.getFullYear(),q=Math.floor(vs.getMonth()/3);
+  for(;;){var s=new Date(y,q*3,1);if(s>ve)break;var qStr="Q"+(q+1)+" "+y;a.push({label:qStr,start:s,end:new Date(y,q*3+3,0),q:qStr});if(++q>3){q=0;y++;}}
+  return a;
+}
+function monthOpts(){
+  var a=[];
+  for(var y=2025;y<=2029;y++)for(var m=0;m<12;m++)a.push({label:MONTHS[m]+" "+y,value:y+"-"+String(m+1).padStart(2,"0")});
+  return a;
+}
+const MONTH_OPTS = monthOpts();
+function findQuarterCol(q,cols){if(!q)return null;return cols.find(function(c){return c.q===q.trim();})||null;}
+function spreadMs(ms,pctFn){
+  var pos=ms.map(function(m){return Object.assign({},m,{pv:pctFn(m.start)});}).filter(function(m){return m.pv!==null;});
+  pos.sort(function(a,b){return a.pv-b.pv;});
+  var res=[];
+  for(var i=0;i<pos.length;i++){
+    var yo=0;
+    for(var j=0;j<res.length;j++){if(Math.abs(pos[i].pv-res[j].pv)<2){yo=res[j].yo===0?-8:res[j].yo===-8?8:res[j].yo+8;}}
+    res.push(Object.assign({},pos[i],{yo:yo}));
+  }
+  return res;
+}
+
+function parseCSV(text){
+  var rows=[],row=[],cell="",inQ=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i],n=text[i+1];
+    if(c==='"'&&inQ&&n==='"'){cell+='"';i++;}
+    else if(c==='"')inQ=!inQ;
+    else if(c===','&&!inQ){row.push(cell);cell="";}
+    else if((c==='\n'||c==='\r')&&!inQ){if(cell||row.length){row.push(cell);rows.push(row);row=[];cell="";}if(c==='\r'&&n==='\n')i++;}
+    else cell+=c;
+  }
+  if(cell||row.length){row.push(cell);rows.push(row);}
+  var hdrs=rows.shift().map(function(h){return h.trim();});
+  return rows.filter(function(r){return r.some(function(c){return c.trim()!=="";});}).map(function(r){var o={};hdrs.forEach(function(h,i){o[h]=(r[i]||"").trim();});return o;});
+}
+
+// [CHANGE] normalizeRows now maps `status` column for initiative rows
+function normalizeRows(rows){
+  var inits=[],mils=[];
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    if(String(r.showOnRoadmap||"").toUpperCase()==="FALSE")continue;
+    if(String(r.type||"").trim()==="Exclude from Roadmap")continue;
+    var id=nf(r.id),cat=nf(r.cat).toLowerCase(),icon=nf(r.icon).toLowerCase(),name=nf(r.name);
+    if(!name)continue;
+    if(id&&cat==="initiative"){
+      var goal=resolveGoal(nf(r.goal)),rawType=nf(r.type);
+      if(rawType==="Program Staff"||rawType==="Participant Milestone")continue;
+      if(!goal||!rawType||TYPE_KEYS.indexOf(rawType)===-1)continue;
+      // [CHANGE] Read status; normalize to known values or null
+      var rawStatus = nf(r.status)||nf(r["Status"])||"";
+      var status = STATUS_CFG[rawStatus] ? rawStatus : null;
+      inits.push({
+        id,name,
+        start:nf(r.start)||null,end:nf(r.end)||null,
+        goal,type:rawType,cat:"initiative",
+        overviewUrl:nf(r.overviewUrl),
+        quarter:nf(r.quarter)||null,
+        status,                         // [CHANGE] new field
+        notes:nf(r.notes)||null,
+        description:nf(r.description,r.summary)||null,
+      });
+    } else if(!id&&(icon==="star"||icon==="diamond")){
+      var pid=extractParentId(nf(r.parent));
+      if(!pid)continue;
+      var mc2=(cat==="tech"||cat==="comms")?cat:(icon==="star"?"tech":"comms");
+      mils.push({id:("MS-"+pid+"-"+name).replace(/[^a-zA-Z0-9._-]+/g,"-").slice(0,80),name,start:nf(r.start)||null,end:nf(r.end)||null,cat:mc2,icon,parent:pid,goal:"",type:""});
+    }
+  }
+  var imap={};inits.forEach(function(it){imap[it.id]=it;});
+  var resolvedMs=mils.map(function(m){
+    var p=imap[m.parent];if(!p)return null;
+    return Object.assign({},m,{goal:p.goal,type:p.type,start:m.start||m.end||p.end||p.start||null});
+  }).filter(function(m){return m&&m.start;});
+  return inits.concat(resolvedMs);
+}
+
+// ─── Data fetching (unchanged) ────────────────────────────────────────────────
+function addCacheBuster(url){return url+(url.indexOf("?")===-1?"?":"&")+"_="+Date.now()+"-"+Math.random().toString(36).slice(2);}
+function sheetUrlCandidates(){
+  var params=new URLSearchParams(window.location.search||"");
+  var customCsv=params.get("csvUrl");
+  if(customCsv)return[{label:"custom CSV",url:addCacheBuster(customCsv),baseUrl:customCsv}];
+  var sheetId=params.get("sheetId")||LIVE_SHEET_ID,gid=params.get("gid")||LIVE_SHEET_GID;
+  var id=encodeURIComponent(sheetId),g=encodeURIComponent(gid);
+  return[
+    {label:"live export CSV",url:addCacheBuster("https://docs.google.com/spreadsheets/d/"+id+"/export?format=csv&gid="+g+"&single=true"),baseUrl:"https://docs.google.com/spreadsheets/d/"+id+"/export?format=csv&gid="+g+"&single=true"},
+    {label:"live gviz CSV",url:addCacheBuster("https://docs.google.com/spreadsheets/d/"+id+"/gviz/tq?tqx=out:csv&gid="+g),baseUrl:"https://docs.google.com/spreadsheets/d/"+id+"/gviz/tq?tqx=out:csv&gid="+g},
+  ];
+}
+function liveCsvUrl(){var p=new URLSearchParams(window.location.search||"");var c=p.get("csvUrl");if(c)return c;var s=p.get("sheetId")||LIVE_SHEET_ID,g=p.get("gid")||LIVE_SHEET_GID;return"https://docs.google.com/spreadsheets/d/"+encodeURIComponent(s)+"/gviz/tq?tqx=out:csv&gid="+encodeURIComponent(g);}
+function liveSheetEditUrl(){var p=new URLSearchParams(window.location.search||"");var s=p.get("sheetId")||LIVE_SHEET_ID,g=p.get("gid")||LIVE_SHEET_GID;return"https://docs.google.com/spreadsheets/d/"+encodeURIComponent(s)+"/edit?gid="+encodeURIComponent(g)+"#gid="+encodeURIComponent(g);}
+function gvizJsonUrl(){var p=new URLSearchParams(window.location.search||"");var s=p.get("sheetId")||LIVE_SHEET_ID,g=p.get("gid")||LIVE_SHEET_GID;var cb="__roadmapGvizCallback_"+Date.now()+"_"+Math.random().toString(36).slice(2);var url="https://docs.google.com/spreadsheets/d/"+encodeURIComponent(s)+"/gviz/tq?gid="+encodeURIComponent(g)+"&tqx=out:json;responseHandler:"+cb;return{callbackName:cb,url:addCacheBuster(url),baseUrl:url};}
+function gvizCellValue(cell){if(!cell)return "";if(cell.f!=null&&String(cell.f).trim()!=="")return String(cell.f).trim();if(cell.v==null)return "";if(Object.prototype.toString.call(cell.v)==="[object Date]"){var d=cell.v;return(d.getMonth()+1)+"/"+d.getDate()+"/"+String(d.getFullYear()).slice(-2);}return String(cell.v).trim();}
+function parseGvizTable(resp){if(!resp||!resp.table||!resp.table.cols||!resp.table.rows)throw new Error("Google returned no table data.");var headers=resp.table.cols.map(function(c){return String(c.label||c.id||"").trim();});if(!headers.filter(Boolean).length)throw new Error("Google returned table data without headers.");return resp.table.rows.map(function(row){var o={};headers.forEach(function(h,i){if(h)o[h]=gvizCellValue((row.c||[])[i]);});return o;}).filter(function(r){return Object.keys(r).some(function(k){return String(r[k]||"").trim()!=="";});});}
+function fetchGvizJsonpSource(){var src=gvizJsonUrl();return new Promise(function(resolve,reject){var timer=null,script=document.createElement("script");function cleanup(){if(timer)clearTimeout(timer);try{delete window[src.callbackName];}catch(e){window[src.callbackName]=undefined;}if(script&&script.parentNode)script.parentNode.removeChild(script);}window[src.callbackName]=function(resp){try{var parsedRows=parseGvizTable(resp),rows=normalizeRows(parsedRows);if(!rows.filter(function(i){return i.cat==="initiative";}).length)throw new Error("live gviz JSON returned data, but no roadmap initiatives were found.");cleanup();resolve({rows,source:"live gviz JSON",rawCount:parsedRows.length,sourceUrl:src.baseUrl});}catch(err){cleanup();reject(err);}};script.onerror=function(){cleanup();reject(new Error("live gviz JSON could not be loaded."));};timer=setTimeout(function(){cleanup();reject(new Error("live gviz JSON timed out."));},12000);script.src=src.url;document.head.appendChild(script);});}
+function fetchOneSheetSource(src){return fetch(src.url,{cache:"no-store",credentials:"omit"}).then(function(resp){if(!resp.ok)throw new Error(src.label+" returned HTTP "+resp.status);return resp.text();}).then(function(text){if(String(text||"").toLowerCase().indexOf("<html")>-1||String(text||"").toLowerCase().indexOf("<!doctype")>-1)throw new Error(src.label+" returned HTML instead of CSV.");var parsedRows=parseCSV(text),rows=normalizeRows(parsedRows);if(!rows.filter(function(i){return i.cat==="initiative";}).length)throw new Error(src.label+" returned CSV but no roadmap initiatives found.");return{rows,source:src.label,rawCount:parsedRows.length,sourceUrl:src.baseUrl||src.url};});}
+function fetchRoadmapData(){var sources=sheetUrlCandidates(),errors=[];function tryCsv(i){if(i>=sources.length)throw new Error(errors.join(" | ")||"No sheet sources available.");return fetchOneSheetSource(sources[i]).catch(function(err){errors.push(err.message||String(err));return tryCsv(i+1);});}return fetchGvizJsonpSource().catch(function(err){errors.push(err.message||String(err));return tryCsv(0);});}
+
+// ─── React hooks ─────────────────────────────────────────────────────────────
+const { useState, useMemo, useCallback, useEffect, useRef } = React;
+const TODAY = new Date();
+
+// ─── Small UI components ──────────────────────────────────────────────────────
+function StarIcon({sz=16,col=MC,style:s={}}){
+  return <svg width={sz} height={sz} viewBox="0 0 24 24" fill={col} stroke="#fff" strokeWidth="1.4" style={s}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.27 5.82 21 7 14.14l-5-4.87 6.91-1.01z"/></svg>;
+}
+function DiamondIcon({sz=16,col=MC,style:s={}}){
+  return <svg width={sz} height={sz} viewBox="0 0 24 24" fill="#fff" stroke={col} strokeWidth="2.2" style={s}><polygon points="12,3 21,12 12,21 3,12"/></svg>;
+}
+function MsIcon({icon,sz,col,style:s}){return icon==="star"?<StarIcon sz={sz} col={col} style={s}/>:<DiamondIcon sz={sz} col={col} style={s}/>;}
+function ExtLink(){return <svg width={10} height={10} viewBox="0 0 12 12" style={{display:"inline",verticalAlign:"-1px",opacity:.4}} fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 3L3 9M9 3H5M9 3v4" strokeLinecap="round" strokeLinejoin="round"/></svg>;}
+function GridLines({n,faint}){return <div style={{position:"absolute",inset:0,zIndex:1,pointerEvents:"none",display:"flex",overflow:"hidden"}}>{Array.from({length:n}).map((_,i)=><div key={i} style={{flex:1,borderRight:i<n-1?"1px solid "+(faint?"#f2f2f2":"#e8e8e8"):"none"}}/>)}</div>;}
+function Sep(){return <span style={{width:1,height:20,background:"#e8e8e8",flexShrink:0}}/>;}
+function SegBtn({onClick,active,children}){return <button onClick={onClick} style={{fontSize:11,padding:"4px 10px",border:"1px solid "+(active?"#2471A3":"#e0e0e0"),borderRadius:6,background:active?"#2471A3":"#fff",color:active?"#fff":"#666",cursor:"pointer",fontWeight:active?600:400}}>{children}</button>;}
+function Tog({onClick,on,children}){return <button onClick={onClick} style={{fontSize:11,padding:"4px 10px",border:"1px solid "+(on?"#2471A3":"#e0e0e0"),borderRadius:6,background:on?"#EBF5FB":"#fff",color:on?"#2471A3":"#888",cursor:"pointer",fontWeight:on?600:400}}>{children}</button>;}
+function CB({on,col="#2471A3"}){return <span style={{width:14,height:14,borderRadius:3,border:"1px solid "+(on?col:"#ccc"),background:on?col:"#fff",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{on&&<span style={{color:"#fff",fontSize:9}}>✓</span>}</span>;}
+
+// [CHANGE] Status badge component — dot + label, used in label panel and detail panel
+function StatusBadge({status, compact=false}){
+  var cfg = STATUS_CFG[status];
+  if (!cfg) return null;
+  return (
+    <span style={{display:"inline-flex",alignItems:"center",gap:3,padding:compact?"1px 5px":"2px 7px",borderRadius:20,background:cfg.bg,flexShrink:0}}>
+      <span style={{width:6,height:6,borderRadius:"50%",background:cfg.dot,flexShrink:0}}/>
+      {!compact && <span style={{fontSize:9.5,fontWeight:600,color:cfg.tx,whiteSpace:"nowrap"}}>{cfg.label}</span>}
+    </span>
+  );
+}
+
+function MultiSelect({label,options,selected,onChange,getKey,getLabel,getColor}){
+  var [open,setOpen]=useState(false),ref=useRef(null);
+  useEffect(function(){function h(e){if(ref.current&&!ref.current.contains(e.target))setOpen(false);}document.addEventListener("mousedown",h);return function(){document.removeEventListener("mousedown",h);};},[]);
+  var all=selected.length===0;
+  function toggle(k){onChange(selected.includes(k)?selected.filter(x=>x!==k):selected.concat([k]));}
+  return(
+    <div ref={ref} style={{position:"relative",display:"inline-block"}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{fontSize:10.5,padding:"4px 10px",border:"1px solid "+(open||!all?"#2471A3":"#e0e0e0"),borderRadius:20,background:open||!all?"#D6EAF8":"#fafafa",color:open||!all?"#2471A3":"#666",cursor:"pointer",display:"flex",alignItems:"center",gap:5,whiteSpace:"nowrap"}}>
+        {all?label:label+" ("+selected.length+")"}<span style={{fontSize:8,opacity:.6}}>{open?"▲":"▼"}</span>
+      </button>
+      {open&&(
+        <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,zIndex:600,background:"#fff",border:"1px solid #e0e0e0",borderRadius:8,boxShadow:"0 8px 24px rgba(0,0,0,.10)",minWidth:200,padding:"6px 0"}}>
+          <div onClick={()=>{onChange([]);setOpen(false);}} style={{fontSize:11.5,padding:"6px 12px",cursor:"pointer",color:all?"#2471A3":"#555",fontWeight:all?600:400,background:all?"#EBF5FB":"transparent",display:"flex",alignItems:"center",gap:8}}><CB on={all}/>All</div>
+          <div style={{height:1,background:"#f0f0f0",margin:"4px 0"}}/>
+          {options.map(function(o){var k=getKey(o),on=selected.includes(k),c=getColor?getColor(o):null;return(
+            <div key={k} onClick={()=>toggle(k)} style={{fontSize:11.5,padding:"6px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:8,background:on?"#EBF5FB":"transparent",color:on?"#2471A3":"#333"}}>
+              <CB on={on}/>{c&&<span style={{width:8,height:8,borderRadius:2,background:c,display:"inline-block"}}/>}{getLabel(o)}
+            </div>
+          );})}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── App ─────────────────────────────────────────────────────────────────────
+function App(){
+  var [items,setItems]           = useState([]);
+  var [loadSt,setLoadSt]         = useState("loading");
+  var [startM,setStartM]         = useState("2026-01");
+  var [endM,setEndM]             = useState("2026-12");
+  var [unit,setUnit]             = useState("quarter");
+  var [groupBy,setGroupBy]       = useState("goal");
+  var [grouped,setGrouped]       = useState(true);
+  var [showAud,setShowAud]       = useState(true);
+  var [showLeg,setShowLeg]       = useState(true);
+  var [hideTBD,setHideTBD]       = useState(false);
+  var [milestoneView,setMilestoneView] = useState("both");
+  var [sortBy,setSortBy]         = useState("start");
+  var [search,setSearch]         = useState("");
+  var [fGoals,setFGoals]         = useState([]);
+  var [fTypes,setFTypes]         = useState([]);
+  var [fStatus,setFStatus]       = useState([]);  // [CHANGE] status filter
+  var [expanded,setExpanded]     = useState(null);
+  var [tooltip,setTooltip]       = useState(null);
+  var [shareMsg,setShareMsg]     = useState(false);
+  var [dataLoadedAt,setDataLoadedAt] = useState(null);
+  var [dataSource,setDataSource] = useState("");
+  var [rawRowCount,setRawRowCount] = useState(null);
+  var [sourceUrl,setSourceUrl]   = useState("");
+  var [loadError,setLoadError]   = useState("");
+  var [isRefreshing,setIsRefreshing] = useState(false);
+  var isAdmin = new URLSearchParams(window.location.search||"").get("admin")==="1";
+
+  function loadEmbeddedFallback(errMsg){
+    var r=normalizeRows(parseTSV(FALLBACK_TSV));
+    setItems(r);setDataLoadedAt(new Date());setDataSource("embedded fallback");
+    setRawRowCount(null);setSourceUrl("");
+    setLoadError(errMsg||"Live Sheet data could not be loaded; showing embedded fallback data.");
+    setLoadSt("ready");
+  }
+  function loadRoadmap(useFallbackOnFail){
+    setLoadError("");setIsRefreshing(true);
+    fetchRoadmapData().then(function(result){
+      setItems(result.rows);setDataLoadedAt(new Date());setDataSource(result.source);
+      setRawRowCount(result.rawCount);setSourceUrl(result.sourceUrl||"");setLoadSt("ready");
+    }).catch(function(err){
+      var msg=err.message||String(err);
+      if(useFallbackOnFail){loadEmbeddedFallback(msg);}
+      else{setLoadError(msg);setDataSource("live load failed");setLoadSt(items.length?"ready":"error");}
+    }).finally(function(){setIsRefreshing(false);});
+  }
+  useEffect(function(){loadRoadmap(true);},[]);
+
+  var VS=useMemo(function(){var p=startM.split("-");return new Date(+p[0],+p[1]-1,1);},[startM]);
+  var VE=useMemo(function(){var p=endM.split("-");return new Date(+p[0],+p[1],0);},[endM]);
+  var pct=useCallback(function(d){if(!d)return null;var D=new Date(d),t=VE-VS;return Math.max(0,Math.min(100,((D-VS)/t)*100));},[VS,VE]);
+  var cols=useMemo(function(){return unit==="month"?genMonths(VS,VE):genQuarters(VS,VE);},[VS,VE,unit]);
+
+  // Initiatives only: cat==="initiative"
+  var allInit=useMemo(function(){return items.filter(i=>i.cat==="initiative");},[items]);
+  var msItems=useMemo(function(){return items.filter(i=>i.cat==="comms"||i.cat==="tech");},[items]);
+
+  // [CHANGE] KPI counts derived from all initiatives (pre-filter) for the summary strip
+  var kpi=useMemo(function(){
+    var total=allInit.length;
+    var counts={};
+    STATUS_KEYS.forEach(k=>{counts[k]=0;});
+    var noStatus=0;
+    allInit.forEach(function(i){if(i.status&&counts[i.status]!==undefined)counts[i.status]++;else noStatus++;});
+    return {total,counts,noStatus};
+  },[allInit]);
+
+  var filtered=useMemo(function(){
+    var d=allInit.filter(function(r){
+      if(fGoals.length&&!fGoals.includes(r.goal))return false;
+      if(fTypes.length&&!fTypes.includes(r.type))return false;
+      if(fStatus.length&&!fStatus.includes(r.status||""))return false; // [CHANGE]
+      if(hideTBD&&isTBDItem(r))return false;
+      if(search){var q=search.toLowerCase();if(!r.name.toLowerCase().includes(q)&&!r.id.toLowerCase().includes(q))return false;}
+      return true;
+    });
+    d.sort(function(a,b){
+      if(sortBy==="start")return (a.start||"9999")>(b.start||"9999")?1:-1;
+      if(sortBy==="end")return (a.end||"9999")>(b.end||"9999")?1:-1;
+      if(sortBy==="name")return a.name.localeCompare(b.name);
+      return a.id.localeCompare(b.id);
+    });
+    return d;
+  },[allInit,fGoals,fTypes,fStatus,hideTBD,search,sortBy]);
+
+  var getMs=useCallback(function(id){
+    return msItems.filter(function(m){
+      if(m.parent!==id)return false;
+      if(milestoneView!=="both"&&m.cat!==milestoneView)return false;
+      return true;
+    });
+  },[msItems,milestoneView]);
+
+  var groups=useMemo(function(){
+    if(!grouped)return[["All",filtered]];
+    var key=groupBy==="goal"?"goal":"type",g={};
+    filtered.forEach(function(r){var k=r[key]||"Unknown";if(!g[k])g[k]=[];g[k].push(r);});
+    return Object.entries(g).sort(function(a,b){return groupBy==="goal"?goalOrder(a[0])-goalOrder(b[0]):TYPE_KEYS.indexOf(a[0])-TYPE_KEYS.indexOf(b[0]);});
+  },[filtered,grouped,groupBy]);
+
+  function gc(k){return GOALS[k]?GOALS[k].color:TYPE_COLOR[k]||"#888";}
+  function gl(k){return GOALS[k]?"Goal "+GOALS[k].num+": "+GOALS[k].short:k;}
+  function ou(id){var it=items.find(i=>i.id===id);return it&&it.overviewUrl?it.overviewUrl:"https://sites.google.com/nih.gov/aou-project-status-inventory/psi-home/initiatives/"+id.replace(/\./g,"-");}
+
+  var todayP=pct(TODAY);
+  var expItem=expanded?items.find(i=>i.id===expanded):null;
+  var expMs=expanded?getMs(expanded):[];
+
+  function reset(){
+    setStartM("2026-01");setEndM("2026-12");setUnit("quarter");setGroupBy("goal");
+    setSortBy("start");setGrouped(true);setShowAud(true);setShowLeg(true);
+    setHideTBD(false);setMilestoneView("both");setSearch("");
+    setFGoals([]);setFTypes([]);setFStatus([]);setExpanded(null);
+  }
+
+  if(loadSt==="loading")return(
+    <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12,color:"#999"}}>
+      <div style={{width:32,height:32,border:"3px solid #eee",borderTopColor:"#2471A3",borderRadius:"50%",animation:"spin .8s linear infinite"}}/>
+      <div style={{fontSize:13}}>Loading roadmap data…</div>
+    </div>
+  );
+  if(loadSt==="error")return(
+    <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:10,color:"#555",padding:40,textAlign:"center"}}>
+      <div style={{fontSize:28}}>⚠️</div>
+      <div style={{fontSize:15,fontWeight:600}}>Could not load live Sheet data</div>
+      <div style={{fontSize:12,color:"#999",maxWidth:400}}>The live CSV could not be read by the dashboard. Confirm the sheet is shared for anonymous viewing, then retry.</div>
+      <button onClick={()=>{setLoadSt("loading");loadRoadmap(true);}} style={{marginTop:8,padding:"8px 20px",border:"1px solid #2471A3",borderRadius:6,background:"#fff",color:"#2471A3",cursor:"pointer",fontSize:12}}>Retry</button>
+    </div>
+  );
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",height:"100%",background:"#fff",color:"#333"}}>
+
+      {/* Tooltip */}
+      {tooltip&&(
+        <div style={{position:"fixed",left:tooltip.x+14,top:tooltip.y-14,background:"#1a1a1a",borderRadius:7,padding:"9px 13px",fontSize:11.5,zIndex:400,pointerEvents:"none",maxWidth:280,boxShadow:"0 4px 20px rgba(0,0,0,.28)"}}>
+          <div style={{fontWeight:600,color:"#fff",marginBottom:3,lineHeight:1.4}}>{tooltip.name}</div>
+          <div style={{color:"#aaa",fontSize:10.5,marginBottom:tooltip.cat?4:0}}>{tooltip.date}</div>
+          {tooltip.cat&&<div style={{display:"flex",alignItems:"center",gap:5}}><MsIcon icon={tooltip.cat==="tech"?"star":"diamond"} sz={11} col={MC}/><span style={{fontSize:10,color:"#ccc"}}>{tooltip.cat==="tech"?"Launch milestone":"Key milestone"}</span></div>}
+        </div>
+      )}
+
+      {/* Header */}
+      <div style={{padding:"10px 24px",borderBottom:"1px solid #ebebeb",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexShrink:0}}>
+        <div>
+          <div style={{fontSize:9,textTransform:"uppercase",letterSpacing:1.2,color:"#bbb",marginBottom:2}}>NIH · <em>All of Us</em> Research Program</div>
+          <div style={{fontSize:15,fontWeight:700,letterSpacing:"-.02em",color:"#111"}}><em>All of Us</em> 2026 Program Roadmap</div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <span style={{fontSize:11,padding:"3px 10px",borderRadius:12,background:"#f0f0f0",color:"#999"}}>{TODAY.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>
+          <button onClick={()=>{var p=new URLSearchParams();p.set("view","share");if(fGoals.length)p.set("goals",fGoals.map(g=>GOALS[g].num).join(","));if(fTypes.length)p.set("types",fTypes.join(","));navigator.clipboard.writeText(location.href.split("?")[0]+"?"+p).then(()=>{setShareMsg(true);setTimeout(()=>setShareMsg(false),2500);});}} style={{fontSize:11,padding:"4px 12px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#555",cursor:"pointer"}}>Share view</button>
+          <button onClick={reset} style={{fontSize:11,padding:"4px 12px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#999",cursor:"pointer"}}>Reset</button>
+        </div>
+      </div>
+      {shareMsg&&<div style={{padding:"4px 24px",background:"#D5F5E3",color:"#1E8449",fontSize:11,flexShrink:0}}>View link copied to clipboard</div>}
+
+      {/* KPI Summary Strip — total initiatives is live; status cards are placeholders until status column is populated */}
+      <div style={{padding:"8px 24px",borderBottom:"1px solid #ebebeb",display:"flex",gap:12,alignItems:"center",background:"#fafafa",flexShrink:0}}>
+        {/* Live: total initiative count */}
+        <div style={{display:"flex",alignItems:"center",gap:5,padding:"5px 12px",borderRadius:8,border:"1px solid #e8e8e8",background:"#fff"}}>
+          <span style={{fontSize:22,fontWeight:700,color:"#111",lineHeight:1}}>{kpi.total}</span>
+          <span style={{fontSize:10.5,color:"#999",lineHeight:1.3}}>total<br/>initiatives</span>
+        </div>
+
+        <div style={{width:1,height:32,background:"#e8e8e8",flexShrink:0}}/>
+
+        {/* Placeholder status cards — will become live filters once status column is populated */}
+        {STATUS_KEYS.map(function(sk){
+          var cfg=STATUS_CFG[sk];
+          return(
+            <div key={sk} title={"Status tracking coming soon — populate the 'status' column in the sheet to enable"}
+              style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",border:"1px dashed #e0e0e0",borderRadius:8,background:"#fafafa",opacity:.55,userSelect:"none"}}>
+              <span style={{width:8,height:8,borderRadius:"50%",background:cfg.dot,flexShrink:0}}/>
+              <span style={{fontSize:16,fontWeight:700,color:"#ccc",lineHeight:1}}>—</span>
+              <span style={{fontSize:10.5,color:"#aaa",whiteSpace:"nowrap"}}>{cfg.label}</span>
+            </div>
+          );
+        })}
+
+        <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontSize:10,color:"#ccc"}}>Showing</span>
+          <span style={{fontSize:13,fontWeight:600,color:"#333"}}>{filtered.length}</span>
+          <span style={{fontSize:10,color:"#ccc"}}>of {kpi.total}</span>
+        </div>
+      </div>
+
+      {/* [CHANGE] Toolbar split into two tiers: primary controls top, secondary bottom */}
+      {/* Tier 1: Date range, view, group, sort */}
+      <div style={{padding:"8px 24px",borderBottom:"1px solid #f0f0f0",display:"flex",gap:14,alignItems:"center",flexWrap:"wrap",flexShrink:0,background:"#fafafa"}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:600}}>Range</span>
+          <select style={{fontSize:11,padding:"4px 7px",border:"1px solid #e0e0e0",borderRadius:6,background:"#fff",color:"#444",outline:"none",cursor:"pointer"}} value={startM} onChange={e=>setStartM(e.target.value)}>
+            {MONTH_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+          <span style={{color:"#ccc",fontSize:11}}>→</span>
+          <select style={{fontSize:11,padding:"4px 7px",border:"1px solid #e0e0e0",borderRadius:6,background:"#fff",color:"#444",outline:"none",cursor:"pointer"}} value={endM} onChange={e=>setEndM(e.target.value)}>
+            {MONTH_OPTS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+        <Sep/>
+        <div style={{display:"flex",alignItems:"center",gap:4}}>
+          <span style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:600,marginRight:2}}>View</span>
+          <SegBtn active={unit==="quarter"} onClick={()=>setUnit("quarter")}>Quarter</SegBtn>
+          <SegBtn active={unit==="month"} onClick={()=>setUnit("month")}>Month</SegBtn>
+        </div>
+        <Sep/>
+        <div style={{display:"flex",alignItems:"center",gap:4}}>
+          <span style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:600,marginRight:2}}>Group</span>
+          <SegBtn active={groupBy==="goal"} onClick={()=>setGroupBy("goal")}>Goal</SegBtn>
+          <SegBtn active={groupBy==="type"} onClick={()=>setGroupBy("type")}>Audience</SegBtn>
+        </div>
+        <Sep/>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:600}}>Sort</span>
+          <select style={{fontSize:11,padding:"4px 7px",border:"1px solid #e0e0e0",borderRadius:6,background:"#fff",color:"#444",outline:"none",cursor:"pointer"}} value={sortBy} onChange={e=>setSortBy(e.target.value)}>
+            <option value="start">Start date</option>
+            <option value="end">End date</option>
+            <option value="name">Name</option>
+            <option value="id">ID</option>
+          </select>
+        </div>
+        <div style={{marginLeft:"auto"}}>
+          <input style={{fontSize:11.5,padding:"5px 10px",border:"1px solid #e0e0e0",borderRadius:20,width:160,outline:"none",background:"#fff"}} placeholder="🔍  Search…" value={search} onChange={e=>setSearch(e.target.value)}/>
+        </div>
+      </div>
+
+      {/* Tier 2: Filters and toggles */}
+      <div style={{padding:"6px 24px",borderBottom:"1px solid #ebebeb",display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",flexShrink:0,background:"#fafafa"}}>
+        <span style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:600}}>Filter</span>
+        <MultiSelect label="Goal" options={GOAL_KEYS} selected={fGoals} onChange={setFGoals} getKey={k=>k} getLabel={k=>"G"+GOALS[k].num+": "+GOALS[k].short} getColor={k=>GOALS[k].color}/>
+        {showAud&&<MultiSelect label="Audience" options={TYPE_KEYS} selected={fTypes} onChange={setFTypes} getKey={k=>k} getLabel={k=>k} getColor={k=>TYPE_COLOR[k]}/>}
+        <Sep/>
+        <span style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:600}}>Milestones</span>
+        <SegBtn active={milestoneView==="both"} onClick={()=>setMilestoneView("both")}>Both</SegBtn>
+        <SegBtn active={milestoneView==="tech"} onClick={()=>setMilestoneView("tech")}>★ Launch</SegBtn>
+        <SegBtn active={milestoneView==="comms"} onClick={()=>setMilestoneView("comms")}>◇ Key</SegBtn>
+        <Sep/>
+        <Tog on={showAud} onClick={()=>setShowAud(v=>!v)}>Audience</Tog>
+        <Tog on={showLeg} onClick={()=>setShowLeg(v=>!v)}>Legend</Tog>
+        <Tog on={hideTBD} onClick={()=>setHideTBD(v=>!v)}>Hide TBD</Tog>
+      </div>
+
+      {/* Legend */}
+      {showLeg&&(
+        <div style={{padding:"5px 24px",borderBottom:"1px solid #ebebeb",display:"flex",gap:16,alignItems:"center",flexWrap:"wrap",fontSize:10.5,color:"#888",flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
+            <span style={{fontSize:9,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:700}}>Goals</span>
+            {Object.entries(GOALS).map(([k,g])=><span key={k} style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:14,height:6,borderRadius:2,background:g.color,display:"inline-block"}}/>{g.short}</span>)}
+          </div>
+          {showAud&&<div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
+            <span style={{fontSize:9,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:700}}>Audience</span>
+            {TYPE_KEYS.map(t=><span key={t} style={{display:"flex",alignItems:"center",gap:3}}><span style={{fontSize:8,fontWeight:700,width:14,height:14,borderRadius:3,display:"inline-flex",alignItems:"center",justifyContent:"center",background:TYPE_BG[t]||"#eee",color:TYPE_COLOR[t]||"#666"}}>{TYPE_SHORT[t]}</span>{t}</span>)}
+          </div>}
+          <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
+            <span style={{fontSize:9,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:700}}>Markers</span>
+            <span style={{display:"flex",alignItems:"center",gap:4}}><DiamondIcon sz={13}/>Key milestone</span>
+            <span style={{display:"flex",alignItems:"center",gap:4}}><StarIcon sz={13}/>Launch milestone</span>
+            <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:22,height:6,borderRadius:2,background:"repeating-linear-gradient(90deg,#ccc 0,#ccc 3px,transparent 3px,transparent 6px)",display:"inline-block"}}/>TBD</span>
+            <span style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:1.5,height:12,background:"#C0392B",display:"inline-block"}}/>Today</span>
+          </div>
+          {/* [CHANGE] Status legend */}
+          <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
+            <span style={{fontSize:9,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:700}}>Status</span>
+            {STATUS_KEYS.map(sk=>{var c=STATUS_CFG[sk];return <span key={sk} style={{display:"flex",alignItems:"center",gap:3}}><span style={{width:7,height:7,borderRadius:"50%",background:c.dot,display:"inline-block"}}/>{sk}</span>;})}
+          </div>
+        </div>
+      )}
+
+      {/* Main body */}
+      <div style={{flex:1,display:"flex",overflow:"hidden"}}>
+        <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+
+          {/* Frozen column header */}
+          <div style={{display:"flex",flexShrink:0,borderBottom:"2px solid #e0e0e0",background:"#f7f7f7",zIndex:10}}>
+            <div style={{width:LABEL_W,minWidth:LABEL_W,flexShrink:0,borderRight:"1px solid #e5e5e5",height:ROW_H,display:"flex",alignItems:"center",padding:"0 14px",fontSize:9.5,textTransform:"uppercase",letterSpacing:.8,color:"#bbb",fontWeight:600}}>Initiative</div>
+            <div id="col-hdr" style={{flex:1,overflowX:"hidden",overflowY:"hidden"}}>
+              <div style={{minWidth:Math.max(500,cols.length*80),display:"grid",gridTemplateColumns:"repeat("+cols.length+",1fr)",height:ROW_H}}>
+                {cols.map(function(c,i){var now=TODAY>=c.start&&TODAY<=c.end;return(
+                  <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"center",fontSize:10.5,fontWeight:600,color:now?"#2471A3":"#aaa",background:now?"#EBF5FB":"transparent",borderRight:i<cols.length-1?"1px solid #e8e8e8":"none"}}>{c.label}</div>
+                );})}
+              </div>
+            </div>
+          </div>
+
+          <div style={{flex:1,display:"flex",overflow:"hidden"}}>
+
+            {/* Label panel */}
+            <div id="lbl-panel" style={{width:LABEL_W,minWidth:LABEL_W,flexShrink:0,borderRight:"1px solid #e5e5e5",overflowY:"hidden",overflowX:"hidden"}}>
+              {groups.map(function([gKey,gItems]){return(
+                <div key={gKey}>
+                  {/* [CHANGE] Sticky group header */}
+                  {grouped&&(
+                    <div style={{height:ROW_H,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 14px",background:"#f5f5f5",borderBottom:"1px solid #ebebeb",borderLeft:"3px solid "+gc(gKey),position:"sticky",top:0,zIndex:5}}>
+                      <span style={{fontSize:11,fontWeight:600,color:gc(gKey)}}>{gl(gKey)}</span>
+                      <span style={{fontSize:10,color:"#ccc"}}>{gItems.length}</span>
+                    </div>
+                  )}
+                  {gItems.map(function(item){return(
+                    <div key={item.id} className="lbl-row" onClick={()=>setExpanded(expanded===item.id?null:item.id)}
+                      style={{height:ROW_H,display:"flex",alignItems:"center",gap:4,padding:"0 6px 0 10px",borderBottom:"1px solid #f5f5f5",borderLeft:grouped?"3px solid "+gc(gKey)+"22":"none",overflow:"hidden",cursor:"pointer",background:expanded===item.id?"#EBF5FB":"transparent",transition:"background .1s"}}>
+                      {showAud&&TYPE_SHORT[item.type]&&<span style={{fontSize:7.5,fontWeight:700,width:14,height:14,borderRadius:3,display:"inline-flex",alignItems:"center",justifyContent:"center",background:TYPE_BG[item.type]||"#eee",color:TYPE_COLOR[item.type]||"#666",flexShrink:0}}>{TYPE_SHORT[item.type]}</span>}
+                      {isTBDItem(item)&&<span style={{fontSize:7,fontWeight:600,padding:"1px 3px",borderRadius:3,background:"#f0f0f0",color:"#ccc",flexShrink:0,border:"1px solid #e8e8e8"}}>TBD</span>}
+                      <span style={{fontSize:11,color:"#333",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",flex:1,lineHeight:1}} title={item.name}>{item.name}</span>
+                      <a href={ou(item.id)} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{flexShrink:0,opacity:.3,display:"flex"}} title="Open overview"><ExtLink/></a>
+                      {/* [CHANGE] Chevron affordance */}
+                      <span className="lbl-chevron" style={{fontSize:9,color:"#ccc",flexShrink:0,opacity:expanded===item.id?.5:0,transition:"opacity .1s"}}>›</span>
+                    </div>
+                  );})}
+                </div>
+              );})}
+            </div>
+
+            {/* Timeline */}
+            <div id="timeline-body" style={{flex:1,overflow:"auto"}} onScroll={function(e){
+              var el=e.currentTarget;
+              var h=document.getElementById("col-hdr"),l=document.getElementById("lbl-panel");
+              if(h)h.scrollLeft=el.scrollLeft;
+              if(l)l.scrollTop=el.scrollTop;
+            }}>
+              <div style={{minWidth:Math.max(500,cols.length*80),position:"relative"}}>
+                {groups.map(function([gKey,gItems]){return(
+                  <div key={gKey}>
+                    {/* [CHANGE] Sticky group header on timeline side too */}
+                    {grouped&&<div style={{height:ROW_H,background:"#f5f5f5",borderBottom:"1px solid #ebebeb",position:"relative",top:0,zIndex:5}}><GridLines n={cols.length}/></div>}
+                    {gItems.map(function(item){
+                      var l2=pct(item.start),r2=pct(item.end),w=(l2!==null&&r2!==null)?r2-l2:0;
+                      var hasDates=hasFullDates(item),barCol=GOALS[item.goal]?GOALS[item.goal].color:"#888";
+                      var ms=getMs(item.id),spread=spreadMs(ms,pct);
+                      var qCol=(!hasDates&&item.quarter)?findQuarterCol(item.quarter,cols):null;
+                      var qL=qCol?pct(qCol.start.toISOString().slice(0,10)):null;
+                      var qR=qCol?pct(qCol.end.toISOString().slice(0,10)):null;
+                      var qW=(qL!==null&&qR!==null)?qR-qL:0;
+
+                      return(
+                        <div key={item.id} style={{height:ROW_H,position:"relative",borderBottom:"1px solid #f5f5f5",background:expanded===item.id?"#EBF5FB":"transparent",overflow:"visible"}}>
+                          <GridLines n={cols.length} faint={true}/>
+
+                          {/* [CHANGE] Bar left-edge tinted by status if at risk/off track */}
+                          {hasDates&&w>0.2&&(
+                            <div onClick={()=>setExpanded(expanded===item.id?null:item.id)} title={item.name}
+                              style={{position:"absolute",top:8,height:20,borderRadius:4,cursor:"pointer",left:l2+"%",width:w+"%",background:barCol,opacity:.88,display:"flex",alignItems:"center",overflow:"hidden",zIndex:2,
+                                boxShadow:"none"
+                              }}>
+                              {w>5&&<span style={{fontSize:9.5,fontWeight:500,padding:"0 5px",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{item.name}</span>}
+                            </div>
+                          )}
+                          {!hasDates&&qW>0.2&&(
+                            <div onClick={()=>setExpanded(expanded===item.id?null:item.id)} title={"Target: "+item.quarter}
+                              style={{position:"absolute",top:11,height:14,borderRadius:3,cursor:"pointer",left:qL+"%",width:qW+"%",background:barCol,opacity:.15,zIndex:2,border:"1.5px dashed "+barCol,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                              <span style={{fontSize:8,fontWeight:600,color:barCol,opacity:1}}>{item.quarter}</span>
+                            </div>
+                          )}
+                          {!hasDates&&!qW&&(
+                            <div onClick={()=>setExpanded(expanded===item.id?null:item.id)} title="Dates TBD"
+                              style={{position:"absolute",top:12,left:"2%",right:"2%",height:10,borderRadius:3,cursor:"pointer",zIndex:2,background:"repeating-linear-gradient(90deg,#d8d8d8 0,#d8d8d8 4px,transparent 4px,transparent 8px)",opacity:.5,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                              <span style={{fontSize:7.5,color:"#aaa",fontWeight:600,background:"rgba(255,255,255,.9)",padding:"0 3px",borderRadius:2}}>TBD</span>
+                            </div>
+                          )}
+
+                          {/* [CHANGE] Milestone icons reduced to 16px to fit within 36px row */}
+                          {spread.map(function(m){return(
+                            <span key={m.id}
+                              onMouseEnter={e=>setTooltip({x:e.clientX,y:e.clientY,name:m.name,date:fmtDate(m.start),cat:m.cat})}
+                              onMouseLeave={()=>setTooltip(null)}
+                              onClick={e=>e.stopPropagation()}
+                              style={{position:"absolute",top:8+m.yo,left:m.pv+"%",transform:"translateX(-8px)",zIndex:10,cursor:"pointer",display:"inline-flex",filter:"drop-shadow(0 1px 2px rgba(0,0,0,.2))"}}>
+                              <MsIcon icon={m.icon} sz={16} col={MC}/>
+                            </span>
+                          );})}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );})}
+
+                {todayP!==null&&todayP>=0&&todayP<=100&&(
+                  <div style={{position:"absolute",top:0,bottom:0,left:todayP+"%",width:1.5,background:"#C0392B",opacity:.55,zIndex:5,pointerEvents:"none"}}>
+                    <div style={{position:"absolute",top:4,left:3,fontSize:8,fontWeight:700,background:"#C0392B",color:"#fff",padding:"2px 5px",borderRadius:3,whiteSpace:"nowrap"}}>Today</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Detail panel */}
+        <div style={{width:expItem?380:0,minWidth:expItem?380:0,maxWidth:"38vw",borderLeft:expItem?"1px solid #e5e5e5":"none",background:"#fafafa",overflow:"hidden",transition:"width .2s,min-width .2s",flexShrink:0,display:"flex",flexDirection:"column"}}>
+          {expItem&&<>
+            <div style={{padding:"16px 18px 12px",borderBottom:"1px solid #ebebeb",background:"#fff",flexShrink:0}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,marginBottom:8}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:14,fontWeight:700,lineHeight:1.35,overflowWrap:"anywhere",color:"#111",marginBottom:4}}>{expItem.name}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:10,color:"#ccc",fontFamily:"monospace"}}>{expItem.id}</span>
+                    {/* [CHANGE] Full status badge in detail panel header */}
+                    {expItem.status&&<StatusBadge status={expItem.status}/>}
+                  </div>
+                </div>
+                <button onClick={()=>setExpanded(null)} style={{border:"none",background:"none",fontSize:18,color:"#ccc",cursor:"pointer",lineHeight:1,padding:"0 4px",flexShrink:0}}>×</button>
+              </div>
+              <a href={ou(expItem.id)} target="_blank" rel="noopener noreferrer"
+                style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,color:"#2471A3",textDecoration:"none",padding:"5px 12px",border:"1px solid #C8DCF0",borderRadius:6,background:"#EBF5FB",fontWeight:500}}>
+                View initiative overview <ExtLink/>
+              </a>
+            </div>
+
+            <div style={{flex:1,overflowY:"auto",padding:"14px 18px"}}>
+              {expItem.description&&<div style={{marginBottom:10,padding:"10px 12px",borderRadius:6,background:"#fff",border:"1px solid #ebebeb",fontSize:11.5,color:"#444",lineHeight:1.65,whiteSpace:"pre-wrap"}}><div style={{fontSize:9,textTransform:"uppercase",letterSpacing:.8,color:"#ccc",fontWeight:600,marginBottom:5}}>Description</div>{expItem.description}</div>}
+              {expItem.notes&&<div style={{marginBottom:14,padding:"10px 12px",borderRadius:6,background:"#fff",border:"1px solid #ebebeb",fontSize:11.5,color:"#444",lineHeight:1.65,whiteSpace:"pre-wrap"}}><div style={{fontSize:9,textTransform:"uppercase",letterSpacing:.8,color:"#ccc",fontWeight:600,marginBottom:5}}>Notes</div>{expItem.notes}</div>}
+
+              {/* [CHANGE] Dates are now formatted via fmtDate() */}
+              {[
+                ["Goal",     GOALS[expItem.goal]?"Goal "+GOALS[expItem.goal].num+": "+GOALS[expItem.goal].short:expItem.goal],
+                ["Audience", expItem.type],
+                ["Status",   expItem.status||"Not set"],
+                ["Timing",   hasFullDates(expItem)?null:(expItem.quarter?"Target "+expItem.quarter:"TBD")],
+                ["Start",    hasFullDates(expItem)?fmtDate(expItem.start):null],
+                ["End",      hasFullDates(expItem)?fmtDate(expItem.end):null],
+                ["Duration", hasFullDates(expItem)?Math.round((new Date(expItem.end)-new Date(expItem.start))/86400000)+" days":null],
+              ].filter(r=>r[1]).map(function([k,v]){
+                var isStatus=k==="Status";
+                return(
+                  <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid #f2f2f2",padding:"7px 0",gap:12}}>
+                    <span style={{fontSize:9.5,textTransform:"uppercase",letterSpacing:.8,color:"#ccc",fontWeight:600,flexShrink:0}}>{k}</span>
+                    {isStatus&&expItem.status
+                      ? <StatusBadge status={expItem.status}/>
+                      : <span style={{fontSize:12,color:"#222",textAlign:"right",maxWidth:230,overflowWrap:"anywhere",lineHeight:1.4}}>{v}</span>
+                    }
+                  </div>
+                );
+              })}
+
+              {!hasFullDates(expItem)&&(
+                <div style={{padding:"8px 10px",borderRadius:5,background:"#FFFBF0",border:"1px solid #F0E0A0",fontSize:11,color:"#7D6000",display:"flex",gap:7,marginTop:6,lineHeight:1.5}}>
+                  <span>📅</span><span>{expItem.quarter?"Target: "+expItem.quarter+". Confirm dates in the sheet.":"Dates not yet confirmed."}</span>
+                </div>
+              )}
+
+              {expMs.length>0&&(
+                <div style={{marginTop:14}}>
+                  <div style={{fontSize:9,textTransform:"uppercase",letterSpacing:.8,color:"#ccc",fontWeight:600,marginBottom:7}}>Milestones ({expMs.length})</div>
+                  {expMs.map(function(m){return(
+                    <div key={m.id} style={{fontSize:11,display:"flex",alignItems:"center",gap:8,padding:"7px 10px",marginBottom:4,borderRadius:5,border:"1px solid "+MC+"33",background:MC+"08"}}>
+                      <MsIcon icon={m.icon} sz={14} col={MC} style={{flexShrink:0}}/>
+                      <span style={{flex:1,overflowWrap:"anywhere",lineHeight:1.4,color:"#333"}}>{m.name}</span>
+                      {/* [CHANGE] Formatted milestone date */}
+                      <span style={{color:"#bbb",fontSize:10,flexShrink:0,whiteSpace:"nowrap"}}>{fmtDate(m.start)}</span>
+                    </div>
+                  );})}
+                </div>
+              )}
+            </div>
+          </>}
+        </div>
+      </div>
+
+      {/* [CHANGE] Footer: always shows last-updated time; admin extras still gated on ?admin=1 */}
+      <div style={{padding:"4px 24px",borderTop:"1px solid #ebebeb",background:"#fafafa",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexShrink:0,fontSize:11,color:"#888"}}>
+        {/* Always-visible freshness timestamp */}
+        <span style={{fontSize:10,color:"#bbb"}}>
+          {dataLoadedAt?"Data as of "+dataLoadedAt.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):""}{dataSource==="embedded fallback"?" (offline copy)":""}
+        </span>
+        {isAdmin&&(
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            {loadError&&<span title={loadError} style={{fontSize:10,color:"#A04000",maxWidth:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>⚠ {loadError}</span>}
+            {dataSource&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:10,background:dataSource==="embedded fallback"?"#FDECEA":"#EAF7EF",color:dataSource==="embedded fallback"?"#C0392B":"#1E8449"}}>{dataSource}</span>}
+            <a href={liveCsvUrl()} target="_blank" rel="noopener noreferrer" style={{fontSize:11,padding:"3px 9px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#555",textDecoration:"none"}}>CSV</a>
+            <a href={liveSheetEditUrl()} target="_blank" rel="noopener noreferrer" style={{fontSize:11,padding:"3px 9px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#555",textDecoration:"none"}}>Sheet</a>
+            <button disabled={isRefreshing} onClick={()=>loadRoadmap(true)} style={{fontSize:11,padding:"3px 10px",border:"1px solid #C8DCF0",borderRadius:6,background:isRefreshing?"#f5f5f5":"#EBF5FB",color:isRefreshing?"#aaa":"#2471A3",cursor:isRefreshing?"default":"pointer"}}>{isRefreshing?"Refreshing…":"Refresh"}</button>
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
