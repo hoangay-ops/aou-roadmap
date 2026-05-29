@@ -345,7 +345,7 @@ function App(){
   var [grouped,setGrouped]       = useState(true);
   var [showAud,setShowAud]       = useState(true);
   var [showLeg,setShowLeg]       = useState(true);
-  var [hideTBD,setHideTBD]       = useState(false);
+  var [hideTBD,setHideTBD]       = useState(true);  // [FIX] Default to hiding TBDs
   var [milestoneView,setMilestoneView] = useState("both");
   var [sortBy,setSortBy]         = useState("start");
   var [search,setSearch]         = useState("");
@@ -478,7 +478,7 @@ function App(){
   function reset(){
     setStartM("2026-01");setEndM("2026-12");setUnit("quarter");setGroupBy("goal");
     setSortBy("start");setGrouped(true);setShowAud(true);setShowLeg(true);
-    setHideTBD(false);setMilestoneView("both");setSearch("");
+    setHideTBD(true);setMilestoneView("both");setSearch("");  // [FIX] Reset TBD to true (hidden)
     setFGoals([]);setFTypes([]);setFStatus([]);setExpanded(null);
   }
 
@@ -551,25 +551,30 @@ function App(){
         </div>
       )}
 
-      {/* Header */}
-      <div style={{padding:"10px 24px",borderBottom:"1px solid #ebebeb",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexShrink:0}}>
-        <div>
-          <div style={{fontSize:9,textTransform:"uppercase",letterSpacing:1.2,color:"#bbb",marginBottom:2}}>NIH · <em>All of Us</em> Research Program</div>
-          <div style={{fontSize:15,fontWeight:700,letterSpacing:"-.02em",color:"#111"}}><em>All of Us</em> 2026 Program Roadmap</div>
+      {/* [FIX] Header — improved spacing, hierarchy, and alignment */}
+      <div style={{padding:"12px 24px",borderBottom:"1px solid #ebebeb",display:"flex",alignItems:"center",justifyContent:"space-between",gap:16,flexShrink:0,background:"#fff"}}>
+        {/* Left: Program + roadmap title */}
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:8.5,textTransform:"uppercase",letterSpacing:1.4,color:"#ccc",marginBottom:3,fontWeight:600}}>NIH · <em>All of Us</em> Research Program</div>
+          <div style={{fontSize:16,fontWeight:700,letterSpacing:"-.015em",color:"#111",lineHeight:1.2}}><em>All of Us</em> 2026 Program Roadmap</div>
         </div>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <span style={{fontSize:11,padding:"3px 10px",borderRadius:12,background:"#f0f0f0",color:"#999"}}>{TODAY.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>
-          {/* [FIX] Locked view badge replaces controls */}
+
+        {/* Right: controls */}
+        <div style={{display:"flex",gap:12,alignItems:"center",flexShrink:0}}>
+          {/* Date badge */}
+          <span style={{fontSize:10.5,padding:"4px 10px",borderRadius:20,background:"#f5f5f5",color:"#999",fontWeight:500,whiteSpace:"nowrap"}}>{TODAY.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>
+
+          {/* Action buttons or locked badge */}
           {isLocked ? (
-            <span style={{fontSize:10,padding:"4px 12px",borderRadius:12,background:"#D5F5E3",color:"#1E8449",fontWeight:600}}>Read-only view</span>
+            <span style={{fontSize:10,padding:"5px 12px",borderRadius:20,background:"#D5F5E3",color:"#1E8449",fontWeight:600,whiteSpace:"nowrap"}}>Read-only view</span>
           ) : (<>
-            <button onClick={shareView} style={{fontSize:11,padding:"4px 12px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#555",cursor:"pointer"}}>Share view</button>
-            <button onClick={shareLockedView} title="Copy a read-only link (toolbars hidden)" style={{fontSize:11,padding:"4px 12px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#555",cursor:"pointer"}}>Share locked</button>
-            <button onClick={reset} style={{fontSize:11,padding:"4px 12px",border:"1px solid #ddd",borderRadius:6,background:"#fff",color:"#999",cursor:"pointer"}}>Reset</button>
+            <button onClick={shareView} title="Copy URL with current view settings" style={{fontSize:10.5,padding:"5px 12px",border:"1px solid #e0e0e0",borderRadius:6,background:"#fff",color:"#555",cursor:"pointer",fontWeight:500,transition:"all .15s"}}>Share view</button>
+            <button onClick={shareLockedView} title="Copy read-only URL (toolbars hidden)" style={{fontSize:10.5,padding:"5px 12px",border:"1px solid #e0e0e0",borderRadius:6,background:"#fff",color:"#555",cursor:"pointer",fontWeight:500,transition:"all .15s"}}>Share locked</button>
+            <button onClick={reset} title="Reset all filters and settings to defaults" style={{fontSize:10.5,padding:"5px 12px",border:"1px solid #e0e0e0",borderRadius:6,background:"#fff",color:"#aaa",cursor:"pointer",fontWeight:500,transition:"all .15s"}}>Reset</button>
           </>)}
         </div>
       </div>
-      {shareMsg&&<div style={{padding:"4px 24px",background:"#D5F5E3",color:"#1E8449",fontSize:11,flexShrink:0}}>View link copied to clipboard</div>}
+      {shareMsg&&<div style={{padding:"6px 24px",background:"#D5F5E3",color:"#1E8449",fontSize:11,fontWeight:500,flexShrink:0}}>✓ View link copied to clipboard</div>}
 
       {/* [FIX] KPI Summary Strip — now live when status data exists, placeholder only when zero initiatives have status */}
       <div style={{padding:"8px 24px",borderBottom:"1px solid #ebebeb",display:"flex",gap:12,alignItems:"center",background:"#fafafa",flexShrink:0}}>
